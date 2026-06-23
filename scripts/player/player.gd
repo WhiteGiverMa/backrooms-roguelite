@@ -1,0 +1,267 @@
+extends CharacterBody2D
+class_name Player
+
+signal health_changed(current: float, max_hp: float)
+signal ammo_changed(current: int, max_ammo: int)
+signal weapon_changed(weapon: Weapon)
+
+@export var move_speed: float = 300.0
+@export var dash_speed: float = 900.0
+@export var dash_duration: float = 0.12
+@export var dash_cooldown: float = 1.5
+
+var max_health: float = 100.0
+var health: float = max_health
+var current_weapon: Weapon = null
+var weapon_inventory: Array[Weapon] = []
+
+var is_dashing: bool = false
+var dash_timer: float = 0.0
+var dash_cooldown_timer: float = 0.0
+var is_dead: bool = false
+
+const SPRITE_SIZE = 48
+const SCALE = 2
+const FRAME_IDLE = 0
+const FRAME_WALK1 = 1
+const FRAME_WALK2 = 2
+
+var anim_frame: int = 0
+var anim_timer: float = 0.0
+var anim_speed: float = 0.12
+var last_move_dir: Vector2 = Vector2.DOWN
+
+@onready var sprite: Sprite2D = $Sprite2D
+@onready var weapon_pivot: Node2D = $WeaponPivot
+@onready var muzzle_point: Marker2D = $WeaponPivot/MuzzlePoint
+@onready var dash_particles: CPUParticles2D = $DashParticles
+@onready var hurtbox: Area2D = $Hurtbox
+@onready var hit_flash_timer: Timer = $HitFlashTimer
+
+func _ready() -> void:
+	apply_meta_upgrades()
+	_generate_sprite_texture()
+	hurtbox.body_entered.connect(_on_hurtbox_body_entered)
+	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
+
+func _generate_sprite_texture() -> void:
+	var s = SPRITE_SIZE
+	var img = Image.create(s * 3, s, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+
+	var skin = Color(0.86, 0.71, 0.59)
+	var hair = Color(0.24, 0.16, 0.12)
+	var jacket = Color(0.16, 0.20, 0.24)
+	var pants = Color(0.20, 0.22, 0.20)
+	var boots = Color(0.14, 0.12, 0.10)
+	var gun_c = Color(0.35, 0.35, 0.40)
+	var mask_c = Color(0.39, 0.39, 0.43)
+	var eye = Color.WHITE
+	var pupil = Color(0.08, 0.08, 0.08)
+
+	for f in range(3):
+		var ox = f * s
+		# head (top-down: circle in upper portion)
+		for y in range(2, 16):
+			for x in range(14, 34):
+				var dx = x - 24
+				var dy = y - 9
+				if dx * dx + dy * dy < 64:
+					img.set_pixel(ox + x, y, skin)
+		# hair (top of head)
+		for y in range(1, 6):
+			for x in range(14, 34):
+				var dx = x - 24
+				var dy = y - 4
+				if dx * dx + dy * dy < 49:
+					img.set_pixel(ox + x, y, hair)
+		# eyes
+		img.set_pixel(ox + 20, 7, eye)
+		img.set_pixel(ox + 21, 7, pupil)
+		img.set_pixel(ox + 26, 7, eye)
+		img.set_pixel(ox + 27, 7, pupil)
+		# mask
+		for y in range(12, 16):
+			for x in range(16, 32):
+				img.set_pixel(ox + x, y, mask_c)
+		# body (torso)
+		for y in range(16, 32):
+			for x in range(12, 36):
+				var dx = x - 24
+				var dy = y - 24
+				if dx * dx * 0.7 + dy * dy * 0.3 < 100:
+					img.set_pixel(ox + x, y, jacket)
+		# pants
+		for y in range(30, 40):
+			for x in range(14, 34):
+				img.set_pixel(ox + x, y, pants)
+		# boots
+		for y in range(40, 46):
+			for x in range(14, 34):
+				img.set_pixel(ox + x, y, boots)
+
+		if f == FRAME_IDLE:
+			# gun pointing down-right
+			for y in range(18, 22):
+				for x in range(34, 42):
+					img.set_pixel(ox + x, y, gun_c)
+		elif f == FRAME_WALK1:
+			# gun slightly forward
+			for y in range(17, 21):
+				for x in range(34, 43):
+					img.set_pixel(ox + x, y, gun_c)
+			# left leg forward
+			for y in range(40, 48):
+				for x in range(12, 18):
+					img.set_pixel(ox + x, y, boots)
+		elif f == FRAME_WALK2:
+			# gun slightly back
+			for y in range(19, 23):
+				for x in range(33, 41):
+					img.set_pixel(ox + x, y, gun_c)
+			# right leg forward
+			for y in range(40, 48):
+				for x in range(30, 36):
+					img.set_pixel(ox + x, y, boots)
+
+	var big = Image.create(s * 3 * SCALE, s * SCALE, false, Image.FORMAT_RGBA8)
+	big.fill(Color(0, 0, 0, 0))
+	for fy in range(s):
+		for fx in range(s * 3):
+			var c = img.get_pixel(fx, fy)
+			if c.a > 0:
+				for dy in range(SCALE):
+					for dx in range(SCALE):
+						big.set_pixel(fx * SCALE + dx, fy * SCALE + dy, c)
+
+	var tex = ImageTexture.create_from_image(big)
+	sprite.texture = tex
+	sprite.region_enabled = true
+	sprite.region_rect = Rect2(0, 0, s * SCALE, s * SCALE)
+	sprite.offset = Vector2(-s * SCALE / 2.0, -s * SCALE / 2.0)
+
+func apply_meta_upgrades() -> void:
+	max_health += MetaProgression.get_upgrade_value("max_health")
+	health = max_health
+	move_speed += MetaProgression.get_upgrade_value("move_speed")
+	dash_cooldown -= MetaProgression.get_upgrade_value("dash_cooldown")
+	dash_cooldown = max(dash_cooldown, 0.3)
+
+func _process(delta: float) -> void:
+	if is_dead or GameManager.current_state != GameManager.GameState.PLAYING:
+		return
+	anim_timer += delta
+	if anim_timer >= anim_speed:
+		anim_timer = 0.0
+		anim_frame = (anim_frame + 1) % 2
+
+func _physics_process(delta: float) -> void:
+	if is_dead or GameManager.current_state != GameManager.GameState.PLAYING:
+		return
+
+	if is_dashing:
+		_process_dash(delta)
+		return
+
+	dash_cooldown_timer = max(0.0, dash_cooldown_timer - delta)
+	_handle_movement(delta)
+	_handle_weapon_aim()
+	_handle_actions()
+
+func _handle_movement(delta: float) -> void:
+	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+
+	if Input.is_action_just_pressed("dash") and dash_cooldown_timer <= 0.0 and input_dir != Vector2.ZERO:
+		_start_dash(input_dir)
+
+	if input_dir != Vector2.ZERO:
+		velocity = input_dir * move_speed
+		last_move_dir = input_dir
+	else:
+		velocity = velocity.move_toward(Vector2.ZERO, move_speed * 10 * delta)
+
+	_update_animation(input_dir)
+	move_and_slide()
+
+func _start_dash(dir: Vector2) -> void:
+	is_dashing = true
+	dash_timer = dash_duration
+	dash_cooldown_timer = dash_cooldown
+	velocity = dir * dash_speed
+	dash_particles.emitting = true
+
+func _process_dash(delta: float) -> void:
+	dash_timer -= delta
+	move_and_slide()
+	if dash_timer <= 0.0:
+		is_dashing = false
+		velocity = Vector2.ZERO
+
+func _handle_weapon_aim() -> void:
+	var mouse_pos := get_global_mouse_position()
+	weapon_pivot.look_at(mouse_pos)
+
+func _handle_actions() -> void:
+	if Input.is_action_pressed("shoot") and current_weapon:
+		current_weapon.try_shoot(muzzle_point.global_position, (get_global_mouse_position() - muzzle_point.global_position).normalized())
+
+	if Input.is_action_just_pressed("reload") and current_weapon:
+		current_weapon.start_reload()
+
+func _update_animation(input_dir: Vector2) -> void:
+	var fw = SPRITE_SIZE * SCALE
+	var fh = SPRITE_SIZE * SCALE
+	var frame_x = 0
+	if input_dir != Vector2.ZERO:
+		frame_x = (FRAME_WALK1 + anim_frame) * fw
+	else:
+		frame_x = FRAME_IDLE * fw
+	sprite.region_rect = Rect2(frame_x, 0, fw, fh)
+
+func equip_weapon(weapon: Weapon) -> void:
+	if current_weapon:
+		current_weapon.unequip()
+	current_weapon = weapon
+	weapon.equip(self)
+	weapon_changed.emit(weapon)
+
+func add_weapon(weapon: Weapon) -> void:
+	weapon_inventory.append(weapon)
+	if weapon_inventory.size() == 1:
+		equip_weapon(weapon)
+
+func take_damage(amount: float) -> void:
+	if is_dead or is_dashing:
+		return
+	health -= amount
+	health_changed.emit(health, max_health)
+	_flash_hit()
+	if health <= 0:
+		die()
+
+func heal(amount: float) -> void:
+	health = min(health + amount, max_health)
+	health_changed.emit(health, max_health)
+
+func _flash_hit() -> void:
+	if sprite.material is ShaderMaterial:
+		sprite.material.set_shader_parameter("flash_intensity", 1.0)
+	hit_flash_timer.start()
+
+func _on_hit_flash_timeout() -> void:
+	if sprite.material is ShaderMaterial:
+		sprite.material.set_shader_parameter("flash_intensity", 0.0)
+
+func _on_hurtbox_body_entered(body: Node2D) -> void:
+	if body is Enemy:
+		take_damage(body.contact_damage)
+
+func _on_hurtbox_area_entered(area: Area2D) -> void:
+	if area.get("damage") != null:
+		take_damage(area.damage)
+		area.queue_free()
+
+func die() -> void:
+	is_dead = true
+	sprite.modulate = Color(1, 0.3, 0.3, 1)
+	GameManager.game_over()
