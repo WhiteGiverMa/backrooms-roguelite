@@ -2,10 +2,8 @@ extends Node2D
 class_name LevelGenerator
 
 @export var room_templates: Array[PackedScene] = []
-@export var corridor_template: PackedScene
 @export var rooms_per_floor: int = 8
 @export var room_size: Vector2 = Vector2(640, 480)
-@export var corridor_width: int = 160
 
 var generated_rooms: Array[Room] = []
 var room_positions: Array[Vector2] = []
@@ -20,6 +18,7 @@ func generate_floor() -> void:
 	_generate_room_layout()
 	_place_rooms()
 	_connect_rooms()
+	_place_doors()
 	_place_player()
 	_place_enemies_and_items()
 
@@ -86,11 +85,35 @@ func _connect_rooms() -> void:
 			var a = generated_rooms[i]
 			var b = generated_rooms[j]
 			var dist = a.global_position.distance_to(b.global_position)
-			var expected_dist = room_size.length() * 0.8
 
 			if dist < room_size.x * 1.5:
 				a.add_connection(b)
 				b.add_connection(a)
+
+func _get_direction(from: Room, to: Room) -> int:
+	var diff = to.global_position - from.global_position
+	if abs(diff.x) > abs(diff.y):
+		return 3 if diff.x > 0 else 2  # RIGHT : LEFT
+	else:
+		return 1 if diff.y > 0 else 0  # DOWN : UP
+
+func _place_doors() -> void:
+	var placed_pairs: Dictionary = {}
+
+	for i in generated_rooms.size():
+		for j in range(i + 1, generated_rooms.size()):
+			var a = generated_rooms[i]
+			var b = generated_rooms[j]
+			if not (b in a.connections):
+				continue
+
+			var pair_key = "%d_%d" % [mini(i, j), maxi(i, j)]
+			if placed_pairs.has(pair_key):
+				continue
+			placed_pairs[pair_key] = true
+
+			a.add_door(_get_direction(a, b))
+			b.add_door(_get_direction(b, a))
 
 func _place_player() -> void:
 	var player_node = get_tree().get_first_node_in_group("player")
