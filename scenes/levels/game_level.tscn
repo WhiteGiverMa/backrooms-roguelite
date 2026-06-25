@@ -68,6 +68,11 @@ shape = SubResource("circle_hurtbox")
 wait_time = 0.15
 one_shot = true
 
+[node name="FlashlightBeam" type="Sprite2D" parent="Player"]
+z_index = 100
+centered = true
+visible = false
+
 [node name="PortalDetector" type="Area2D" parent="Player"]
 collision_layer = 0
 collision_mask = 8
@@ -154,19 +159,11 @@ theme_override_constants/v_separation = 6
 [node name="WeaponLabel" type="Label" parent="HUD/Inventory/Panel"]
 layout_mode = 0
 offset_left = 10.0
-offset_top = 248.0
+offset_top = 278.0
 offset_right = 390.0
-offset_bottom = 268.0
+offset_bottom = 298.0
 text = ""
 theme_override_font_sizes/font_size = 14
-
-[node name="FlashlightBtn" type="Button" parent="HUD/Inventory/Panel"]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 274.0
-offset_right = 390.0
-offset_bottom = 304.0
-text = "手电筒 [关]"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HUD"]
 anchors_preset = 2

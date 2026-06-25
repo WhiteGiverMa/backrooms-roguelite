@@ -49,6 +49,7 @@ var near_chest: Area2D = null
 @onready var hit_flash_timer: Timer = $HitFlashTimer
 @onready var portal_detector: Area2D = $PortalDetector
 @onready var interact_detector: Area2D = $InteractDetector
+@onready var flashlight_beam: Sprite2D = $FlashlightBeam
 
 func _ready() -> void:
 	apply_meta_upgrades()
@@ -66,6 +67,23 @@ func _give_starting_weapon() -> void:
 	if pistol_scene:
 		var pistol = pistol_scene.instantiate()
 		add_weapon(pistol)
+	_generate_flashlight_beam()
+
+func _generate_flashlight_beam() -> void:
+	var s = 400
+	var img = Image.create(s, s, false, Image.FORMAT_RGBA8)
+	var center = s / 2.0
+	for y in range(s):
+		for x in range(s):
+			var dx = x - center
+			var dy = y - center
+			var dist = sqrt(dx * dx + dy * dy) / center
+			var alpha = clamp(1.0 - dist, 0.0, 1.0)
+			alpha = alpha * alpha * 0.5
+			img.set_pixel(x, y, Color(1.0, 0.95, 0.7, alpha))
+	var tex = ImageTexture.create_from_image(img)
+	flashlight_beam.texture = tex
+	flashlight_beam.visible = false
 
 func _generate_sprite_texture() -> void:
 	var s = SPRITE_SIZE
@@ -262,6 +280,7 @@ func _update_animation(input_dir: Vector2) -> void:
 
 func _toggle_flashlight() -> void:
 	flashlight_on = not flashlight_on
+	flashlight_beam.visible = flashlight_on
 
 func _update_flashlight() -> void:
 	var fog = get_tree().get_first_node_in_group("fog")
