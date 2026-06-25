@@ -1,0 +1,50 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy.gd" id="1_enemy_script"]
+
+[sub_resource type="CircleShape2D" id="circle_body"]
+radius = 16.0
+
+[sub_resource type="CircleShape2D" id="circle_detect"]
+radius = 200.0
+
+[sub_resource type="CircleShape2D" id="circle_attack"]
+radius = 60.0
+
+[node name="Wanderer" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_enemy_script")
+enemy_type = 0
+max_health = 50.0
+move_speed = 120.0
+contact_damage = 10.0
+detection_range = 400.0
+attack_range = 60.0
+attack_damage = 15.0
+attack_cooldown = 1.0
+sanity_drain_rate = 5.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("circle_body")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = false
+
+[node name="DetectionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea"]
+shape = SubResource("circle_detect")
+
+[node name="AttackArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+shape = SubResource("circle_attack")
+
+[node name="StateTimer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
