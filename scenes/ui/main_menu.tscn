@@ -57,6 +57,12 @@ size_flags_horizontal = 4
 text = "升级"
 theme_override_font_sizes/font_size = 24
 
+[node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "设置"
+theme_override_font_sizes/font_size = 24
+
 [node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
