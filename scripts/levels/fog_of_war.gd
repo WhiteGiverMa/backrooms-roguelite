@@ -38,6 +38,12 @@ func _ready() -> void:
 	offset_bottom = 0.0
 	_setup_material()
 	_find_target()
+	# 应用设置：若「移除战争迷雾」已勾选，初始关闭迷雾层。
+	# 控制台 /fog 命令仍可在游戏中重新打开。
+	if Settings and Settings.disable_fog:
+		var parent := get_parent()
+		if parent is CanvasLayer:
+			parent.visible = false
 
 func _process(_delta: float) -> void:
 	if not is_instance_valid(_target):

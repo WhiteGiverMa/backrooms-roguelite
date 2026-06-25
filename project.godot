@@ -23,7 +23,9 @@ GameManager="*res://scripts/systems/game_manager.gd"
 RunManager="*res://scripts/systems/run_manager.gd"
 MetaProgression="*res://scripts/systems/meta_progression.gd"
 AudioManager="*res://scripts/systems/audio_manager.gd"
+Settings="*res://scripts/systems/settings.gd"
 McpInteractionServer="*res://scripts/systems/mcp_interaction_server.gd"
+Console="*res://scripts/ui/console.gd"
 
 [display]
 

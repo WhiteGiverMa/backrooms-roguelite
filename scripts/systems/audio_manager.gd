@@ -42,12 +42,19 @@ func play_sfx(stream: AudioStream, pitch_variation: float = 0.1) -> void:
 
 func set_master_volume(value: float) -> void:
 	master_volume = value
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(value))
+	_apply_bus_volume("Master", value)
 
 func set_sfx_volume(value: float) -> void:
 	sfx_volume = value
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("SFX"), linear_to_db(value))
+	_apply_bus_volume("SFX", value)
 
 func set_music_volume(value: float) -> void:
 	music_volume = value
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Music"), linear_to_db(value))
+	_apply_bus_volume("Music", value)
+
+## 安全设置 bus 音量：bus 不存在时静默跳过（草稿项目可能未配置 SFX/Music bus）。
+func _apply_bus_volume(bus_name: String, linear_value: float) -> void:
+	var idx: int = AudioServer.get_bus_index(bus_name)
+	if idx < 0:
+		return
+	AudioServer.set_bus_volume_db(idx, linear_to_db(linear_value))
