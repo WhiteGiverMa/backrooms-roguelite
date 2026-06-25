@@ -103,7 +103,7 @@ enemy_scenes = [ExtResource("6_wanderer")]
 [node name="ItemSpawner" type="Node" parent="."]
 script = ExtResource("3_item_spawner")
 
-[node name="FogOfWar" type="CanvasLayer" parent="."]
+[node name="FogOfWar" type="CanvasLayer" parent="." groups=["fog_of_war"]]
 layer = 1
 
 [node name="Darkness" type="ColorRect" parent="FogOfWar" groups=["fog"]]
