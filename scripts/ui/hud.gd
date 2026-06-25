@@ -1,7 +1,8 @@
 extends CanvasLayer
 
-@onready var health_bar: ProgressBar = $VBoxContainer/HealthBar
-@onready var sanity_bar: ProgressBar = $VBoxContainer/SanityBar
+@onready var health_bar: ProgressBar = $VBoxContainer/HealthRow/HealthBar
+@onready var sanity_bar: ProgressBar = $VBoxContainer/SanityRow/SanityBar
+@onready var stamina_bar: ProgressBar = $VBoxContainer/StaminaRow/StaminaBar
 @onready var ammo_label: Label = $VBoxContainer/AmmoLabel
 @onready var floor_label: Label = $VBoxContainer/FloorLabel
 @onready var weapon_label: Label = $VBoxContainer/WeaponLabel
@@ -11,6 +12,7 @@ func _ready() -> void:
 	var player = get_tree().get_first_node_in_group("player")
 	if player:
 		player.health_changed.connect(_on_health_changed)
+		player.stamina_changed.connect(_on_stamina_changed)
 		player.ammo_changed.connect(_on_ammo_changed)
 		player.weapon_changed.connect(_on_weapon_changed)
 
@@ -23,6 +25,10 @@ func _on_health_changed(current: float, max_hp: float) -> void:
 
 func _on_sanity_changed(current: float) -> void:
 	sanity_bar.value = current
+
+func _on_stamina_changed(current: float, max_st: float) -> void:
+	stamina_bar.max_value = max_st
+	stamina_bar.value = current
 
 func _on_ammo_changed(current: int, max_ammo: int) -> void:
 	ammo_label.text = "%d / %d" % [current, max_ammo]

@@ -2,6 +2,7 @@ extends CharacterBody2D
 class_name Player
 
 signal health_changed(current: float, max_hp: float)
+signal stamina_changed(current: float, max_st: float)
 signal ammo_changed(current: int, max_ammo: int)
 signal weapon_changed(weapon: Weapon)
 
@@ -12,6 +13,10 @@ signal weapon_changed(weapon: Weapon)
 
 var max_health: float = 100.0
 var health: float = max_health
+var max_stamina: float = 100.0
+var stamina: float = max_stamina
+var stamina_regen: float = 30.0
+var dash_stamina_cost: float = 25.0
 var current_weapon: Weapon = null
 var weapon_inventory: Array[Weapon] = []
 
@@ -164,6 +169,8 @@ func _physics_process(delta: float) -> void:
 		return
 
 	dash_cooldown_timer = max(0.0, dash_cooldown_timer - delta)
+	stamina = min(stamina + stamina_regen * delta, max_stamina)
+	stamina_changed.emit(stamina, max_stamina)
 	_handle_movement(delta)
 	_handle_weapon_aim()
 	_handle_actions()
@@ -171,7 +178,7 @@ func _physics_process(delta: float) -> void:
 func _handle_movement(delta: float) -> void:
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 
-	if Input.is_action_just_pressed("dash") and dash_cooldown_timer <= 0.0 and input_dir != Vector2.ZERO:
+	if Input.is_action_just_pressed("dash") and dash_cooldown_timer <= 0.0 and input_dir != Vector2.ZERO and stamina >= dash_stamina_cost:
 		_start_dash(input_dir)
 
 	if input_dir != Vector2.ZERO:
@@ -187,6 +194,8 @@ func _start_dash(dir: Vector2) -> void:
 	is_dashing = true
 	dash_timer = dash_duration
 	dash_cooldown_timer = dash_cooldown
+	stamina -= dash_stamina_cost
+	stamina_changed.emit(stamina, max_stamina)
 	velocity = dir * dash_speed
 	dash_particles.emitting = true
 

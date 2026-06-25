@@ -79,16 +79,46 @@ anchor_bottom = 0.0
 anchor_right = 0.0
 offset_left = 20.0
 offset_top = 20.0
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
-[node name="HealthBar" type="ProgressBar" parent="HUD/VBoxContainer"]
-custom_minimum_size = Vector2(200, 20)
+[node name="HealthRow" type="HBoxContainer" parent="HUD/VBoxContainer"]
+theme_override_constants/separation = 6
+
+[node name="HealthLabel" type="Label" parent="HUD/VBoxContainer/HealthRow"]
+text = "血量"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.9, 0.3, 0.3, 1)
+
+[node name="HealthBar" type="ProgressBar" parent="HUD/VBoxContainer/HealthRow"]
+custom_minimum_size = Vector2(180, 18)
 max_value = 100.0
 value = 100.0
 show_percentage = false
 
-[node name="SanityBar" type="ProgressBar" parent="HUD/VBoxContainer"]
-custom_minimum_size = Vector2(200, 20)
+[node name="SanityRow" type="HBoxContainer" parent="HUD/VBoxContainer"]
+theme_override_constants/separation = 6
+
+[node name="SanityLabel" type="Label" parent="HUD/VBoxContainer/SanityRow"]
+text = "san值"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.5, 0.4, 0.9, 1)
+
+[node name="SanityBar" type="ProgressBar" parent="HUD/VBoxContainer/SanityRow"]
+custom_minimum_size = Vector2(180, 18)
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="StaminaRow" type="HBoxContainer" parent="HUD/VBoxContainer"]
+theme_override_constants/separation = 6
+
+[node name="StaminaLabel" type="Label" parent="HUD/VBoxContainer/StaminaRow"]
+text = "体力"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.3, 0.8, 0.3, 1)
+
+[node name="StaminaBar" type="ProgressBar" parent="HUD/VBoxContainer/StaminaRow"]
+custom_minimum_size = Vector2(180, 18)
 max_value = 100.0
 value = 100.0
 show_percentage = false
