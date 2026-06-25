@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/level_generator.gd" id="1_generator"]
 [ext_resource type="Script" path="res://scripts/levels/enemy_spawner.gd" id="2_enemy_spawner"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/levels/room_template.tscn" id="4_room_template"]
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="5_player_script"]
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="6_hud_script"]
+[ext_resource type="Script" path="res://scripts/levels/fog_of_war.gd" id="7_fog_of_war"]
 
 [sub_resource type="CircleShape2D" id="circle_player"]
 radius = 18.0
@@ -69,7 +70,20 @@ script = ExtResource("2_enemy_spawner")
 [node name="ItemSpawner" type="Node" parent="."]
 script = ExtResource("3_item_spawner")
 
+[node name="FogOfWar" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="Darkness" type="ColorRect" parent="FogOfWar"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7_fog_of_war")
+
 [node name="HUD" type="CanvasLayer" parent="."]
+layer = 2
 script = ExtResource("6_hud_script")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HUD"]
