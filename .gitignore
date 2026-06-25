@@ -32,3 +32,6 @@ desktop.ini
 
 # Godot MCP 运行时副本
 mcp_interaction_server.gd
+
+# 仅本地规则
+AGENTS_LOCAL.md
