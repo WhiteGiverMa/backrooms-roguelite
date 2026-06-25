@@ -21,6 +21,8 @@ var current_weapon: Weapon = null
 var weapon_inventory: Array[Weapon] = []
 var has_flashlight: bool = true
 var flashlight_on: bool = false
+var hotbar: Array = [null, null, null, null]
+var hotbar_selected: int = 0
 
 var is_dashing: bool = false
 var dash_timer: float = 0.0
@@ -67,22 +69,24 @@ func _give_starting_weapon() -> void:
 	if pistol_scene:
 		var pistol = pistol_scene.instantiate()
 		add_weapon(pistol)
+	hotbar[0] = "flashlight"
+	hotbar[1] = "pistol"
 	_generate_flashlight_beam()
 
 func _generate_flashlight_beam() -> void:
-	var s = 400
-	var img = Image.create(s, s, false, Image.FORMAT_RGBA8)
-	var center = s / 2.0
-	for y in range(s):
-		for x in range(s):
-			var dx = x - center
-			var dy = y - center
-			var dist = sqrt(dx * dx + dy * dy) / center
-			var alpha = clamp(1.0 - dist, 0.0, 1.0)
-			alpha = alpha * alpha * 0.5
+	var w = 320
+	var h = 160
+	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
+	for y in range(h):
+		for x in range(w):
+			var fx = float(x) / w
+			var dy = abs(float(y) - h / 2.0) / (h / 2.0)
+			var alpha = clamp(1.0 - fx, 0.0, 1.0) * clamp(1.0 - dy * 2.0, 0.0, 1.0)
+			alpha = alpha * 0.35
 			img.set_pixel(x, y, Color(1.0, 0.95, 0.7, alpha))
 	var tex = ImageTexture.create_from_image(img)
 	flashlight_beam.texture = tex
+	flashlight_beam.offset = Vector2(0, -h / 2.0)
 	flashlight_beam.visible = false
 
 func _generate_sprite_texture() -> void:
@@ -195,6 +199,10 @@ func _process(delta: float) -> void:
 	if anim_timer >= anim_speed:
 		anim_timer = 0.0
 		anim_frame = (anim_frame + 1) % 2
+	if flashlight_on:
+		var mp = get_global_mouse_position()
+		flashlight_beam.rotation = (mp - global_position).angle()
+		flashlight_beam.global_position = global_position
 
 func _physics_process(delta: float) -> void:
 	if is_dead or GameManager.current_state != GameManager.GameState.PLAYING:
@@ -260,6 +268,11 @@ func _handle_actions() -> void:
 	if Input.is_action_just_pressed("reload") and current_weapon:
 		current_weapon.start_reload()
 
+	if Input.is_key_pressed(KEY_1): _select_hotbar(0)
+	if Input.is_key_pressed(KEY_2): _select_hotbar(1)
+	if Input.is_key_pressed(KEY_3): _select_hotbar(2)
+	if Input.is_key_pressed(KEY_4): _select_hotbar(3)
+
 	if Input.is_action_just_pressed("interact"):
 		if near_chest:
 			_open_chest()
@@ -287,6 +300,25 @@ func _update_flashlight() -> void:
 	if not fog:
 		return
 	fog.clear_radius = 220.0 if (flashlight_on and has_flashlight) else 110.0
+
+func _select_hotbar(idx: int) -> void:
+	hotbar_selected = idx
+	var item = hotbar[idx]
+	if item == "flashlight":
+		pass
+	elif item is Weapon and item != current_weapon:
+		equip_weapon(item)
+
+func move_to_hotbar(backpack_idx: int) -> void:
+	var wp_idx = backpack_idx - 1 if hotbar[0] == "flashlight" else backpack_idx
+	if wp_idx >= 0 and wp_idx < weapon_inventory.size():
+		hotbar[hotbar_selected] = weapon_inventory[wp_idx]
+
+func has_flashlight_in_hotbar() -> bool:
+	for item in hotbar:
+		if item == "flashlight":
+			return true
+	return false
 
 func equip_weapon(weapon: Weapon) -> void:
 	if current_weapon:

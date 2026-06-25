@@ -38,10 +38,12 @@ func _refresh() -> void:
 		return
 	var inv = player.weapon_inventory
 	var cur = player.current_weapon
+	var sel = player.hotbar_selected
 
 	var idx = 0
 	if player.has_flashlight:
-		slot_buttons[idx].text = "手电筒\n" + ("[开]" if player.flashlight_on else "[关]")
+		var in_hotbar = player.has_flashlight_in_hotbar()
+		slot_buttons[idx].text = "手电筒\n" + ("[开]" if player.flashlight_on else "[关]") + (" (已装备)" if in_hotbar else "")
 		idx += 1
 
 	for i in inv.size():
@@ -50,12 +52,14 @@ func _refresh() -> void:
 		var w = inv[i] as Weapon
 		var txt = w.weapon_name + "\n%d/%d" % [w.current_ammo, w.max_ammo]
 		if w == cur:
-			txt = "[E] " + txt
+			txt = "[装备中] " + txt
 		slot_buttons[idx].text = txt
 		idx += 1
 
 	for i in range(idx, slot_buttons.size()):
 		slot_buttons[i].text = ""
+
+	weapon_label.text = "选中格子 %d — 点击物品装入物品栏" % (sel + 1)
 
 func _on_slot_pressed(idx: int) -> void:
 	var player = get_tree().get_first_node_in_group("player")
@@ -63,11 +67,9 @@ func _on_slot_pressed(idx: int) -> void:
 		return
 
 	if idx == 0 and player.has_flashlight:
-		player._toggle_flashlight()
+		player.hotbar[player.hotbar_selected] = "flashlight"
 		_refresh()
 		return
 
-	var weapon_idx = idx - 1 if player.has_flashlight else idx
-	if weapon_idx >= 0 and weapon_idx < player.weapon_inventory.size():
-		player.equip_weapon(player.weapon_inventory[weapon_idx])
-		_refresh()
+	player.move_to_hotbar(idx)
+	_refresh()
