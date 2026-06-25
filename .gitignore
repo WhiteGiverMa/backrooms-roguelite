@@ -29,3 +29,6 @@ desktop.ini
 
 # Keep Godot resource import metadata tracked when paired with committed assets.
 !*.import
+
+# Godot MCP 运行时副本
+mcp_interaction_server.gd
