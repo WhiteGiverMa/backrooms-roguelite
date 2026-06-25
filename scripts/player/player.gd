@@ -90,6 +90,7 @@ func _generate_flashlight_beam() -> void:
 			img.set_pixel(x, y, Color(1.0, 0.95, 0.7, alpha))
 	var tex = ImageTexture.create_from_image(img)
 	flashlight_beam.texture = tex
+	flashlight_beam.centered = false
 	flashlight_beam.offset = Vector2(0, -h / 2.0)
 	flashlight_beam.visible = false
 
