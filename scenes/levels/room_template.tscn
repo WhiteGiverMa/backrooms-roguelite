@@ -90,6 +90,9 @@ offset_right = 408.0
 offset_bottom = 50.0
 color = Color(0.2, 0.7, 0.2, 1)
 
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 1
+
 [node name="LockCollisionTop" type="CollisionShape2D" parent="StaticBody2D"]
 position = Vector2(0, -304)
 shape = SubResource("rect_lock_h")
@@ -109,9 +112,6 @@ disabled = true
 position = Vector2(404, 0)
 shape = SubResource("rect_lock_v")
 disabled = true
-
-[node name="StaticBody2D" type="StaticBody2D" parent="."]
-collision_layer = 1
 
 [node name="ExitIndicator" type="Sprite2D" parent="."]
 visible = false

@@ -136,6 +136,9 @@ func _update_lock_collisions() -> void:
 
 func _clear_collisions() -> void:
 	for child in static_body.get_children():
+		# 保留 tscn 中声明的 LockCollision* 节点，只清理动态加的墙碰撞。
+		if child.name.begins_with("LockCollision"):
+			continue
 		child.queue_free()
 
 func _build_wall_collisions() -> void:
