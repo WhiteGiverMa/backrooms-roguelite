@@ -19,6 +19,8 @@ var stamina_regen: float = 30.0
 var dash_stamina_cost: float = 25.0
 var current_weapon: Weapon = null
 var weapon_inventory: Array[Weapon] = []
+var has_flashlight: bool = true
+var flashlight_on: bool = false
 
 var is_dashing: bool = false
 var dash_timer: float = 0.0
@@ -190,6 +192,7 @@ func _physics_process(delta: float) -> void:
 	_handle_movement(delta)
 	_handle_weapon_aim()
 	_handle_actions()
+	_update_flashlight()
 
 func _handle_movement(delta: float) -> void:
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -256,6 +259,15 @@ func _update_animation(input_dir: Vector2) -> void:
 	else:
 		frame_x = FRAME_IDLE * fw
 	sprite.region_rect = Rect2(frame_x, 0, fw, fh)
+
+func _toggle_flashlight() -> void:
+	flashlight_on = not flashlight_on
+
+func _update_flashlight() -> void:
+	var fog = get_tree().get_first_node_in_group("fog")
+	if not fog:
+		return
+	fog.clear_radius = 220.0 if (flashlight_on and has_flashlight) else 110.0
 
 func equip_weapon(weapon: Weapon) -> void:
 	if current_weapon:
