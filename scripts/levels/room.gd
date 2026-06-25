@@ -30,10 +30,10 @@ const ROOM_HALF_H: float = 300.0
 @onready var door_bottom: ColorRect = $DoorBottom
 @onready var door_left: ColorRect = $DoorLeft
 @onready var door_right: ColorRect = $DoorRight
-@onready var lock_collision_top: CollisionShape2D = $LockCollisionTop
-@onready var lock_collision_bottom: CollisionShape2D = $LockCollisionBottom
-@onready var lock_collision_left: CollisionShape2D = $LockCollisionLeft
-@onready var lock_collision_right: CollisionShape2D = $LockCollisionRight
+@onready var lock_collision_top: CollisionShape2D = $StaticBody2D/LockCollisionTop
+@onready var lock_collision_bottom: CollisionShape2D = $StaticBody2D/LockCollisionBottom
+@onready var lock_collision_left: CollisionShape2D = $StaticBody2D/LockCollisionLeft
+@onready var lock_collision_right: CollisionShape2D = $StaticBody2D/LockCollisionRight
 
 func _ready() -> void:
 	if exit_indicator:

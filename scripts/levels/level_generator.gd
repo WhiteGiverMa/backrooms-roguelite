@@ -13,6 +13,7 @@ class_name LevelGenerator
 const DIRS: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
 
 var room_map: Dictionary = {}
+var corridors: Array[ColorRect] = []
 var rooms_since_portal: int = 0
 var portal_target: int = 0
 var player_grid: Vector2i = Vector2i.ZERO
@@ -46,6 +47,10 @@ func _clear_floor() -> void:
 		if is_instance_valid(room):
 			room.queue_free()
 	room_map.clear()
+	for c in corridors:
+		if is_instance_valid(c):
+			c.queue_free()
+	corridors.clear()
 
 func _world_to_grid(pos: Vector2) -> Vector2i:
 	return Vector2i(roundi(pos.x / room_size.x), roundi(pos.y / room_size.y))
@@ -71,15 +76,14 @@ func _generate_room_at(grid_pos: Vector2i) -> Room:
 		var neighbor_grid = grid_pos + dir
 		if room_map.has(neighbor_grid):
 			var neighbor = room_map[neighbor_grid] as Room
-			if not (neighbor in room.connections):
-				room.add_connection(neighbor)
-				neighbor.add_connection(room)
+			room.add_connection(neighbor)
+			neighbor.add_connection(room)
 			var room_dir = _vector2i_to_door_dir(dir)
 			var opp_dir = _vector2i_to_door_dir(-dir)
-			if not room.has_door(room_dir):
-				room.add_door(room_dir)
-			if not neighbor.has_door(opp_dir):
-				neighbor.add_door(opp_dir)
+			room.add_door(room_dir)
+			neighbor.add_door(opp_dir)
+			_add_corridor(room, neighbor, room_dir)
+			break
 
 	rooms_since_portal += 1
 	if rooms_since_portal >= portal_target and portal_template:
@@ -96,6 +100,19 @@ func _generate_room_at(grid_pos: Vector2i) -> Room:
 			_place_chest_in(room)
 
 	return room
+
+func _add_corridor(a: Room, b: Room, dir: int) -> void:
+	var corridor = ColorRect.new()
+	corridor.color = Color(0.18, 0.16, 0.12, 1)
+	var mid = (a.global_position + b.global_position) / 2.0
+	if dir == 0 or dir == 1:
+		corridor.position = mid - Vector2(50, 4)
+		corridor.size = Vector2(100, 8)
+	else:
+		corridor.position = mid - Vector2(4, 50)
+		corridor.size = Vector2(8, 100)
+	add_child(corridor)
+	corridors.append(corridor)
 
 func _place_chest_in(room: Room) -> void:
 	var chest = chest_template.instantiate()
