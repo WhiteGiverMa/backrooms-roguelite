@@ -2,8 +2,8 @@ extends Node2D
 class_name LevelGenerator
 
 @export var room_templates: Array[PackedScene] = []
-@export var rooms_per_floor: int = 8
-@export var room_size: Vector2 = Vector2(640, 480)
+@export var rooms_per_floor: int = 12
+@export var room_size: Vector2 = Vector2(800, 600)
 
 var generated_rooms: Array[Room] = []
 var room_positions: Array[Vector2] = []

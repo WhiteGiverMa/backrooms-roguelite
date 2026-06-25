@@ -36,6 +36,7 @@ func equip(player: Player) -> void:
 	if get_parent() != pivot:
 		reparent(pivot)
 	position = Vector2(20, 0)
+	RunManager.ammo_changed.emit(current_ammo, max_ammo)
 
 func unequip() -> void:
 	owner_player = null

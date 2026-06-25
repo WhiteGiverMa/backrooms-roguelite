@@ -15,8 +15,8 @@ var has_door_right: bool = false
 
 const DOOR_GAP: float = 100.0
 const WALL_THICKNESS: float = 8.0
-const ROOM_HALF_W: float = 320.0
-const ROOM_HALF_H: float = 240.0
+const ROOM_HALF_W: float = 400.0
+const ROOM_HALF_H: float = 300.0
 
 @onready var exit_indicator: Sprite2D = $ExitIndicator
 @onready var static_body: StaticBody2D = $StaticBody2D

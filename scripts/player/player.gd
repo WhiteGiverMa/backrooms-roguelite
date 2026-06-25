@@ -48,6 +48,13 @@ func _ready() -> void:
 	_generate_sprite_texture()
 	hurtbox.body_entered.connect(_on_hurtbox_body_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
+	_give_starting_weapon()
+
+func _give_starting_weapon() -> void:
+	var pistol_scene = load("res://scenes/weapons/pistol.tscn")
+	if pistol_scene:
+		var pistol = pistol_scene.instantiate()
+		add_weapon(pistol)
 
 func _generate_sprite_texture() -> void:
 	var s = SPRITE_SIZE
