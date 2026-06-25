@@ -35,6 +35,8 @@ var anim_frame: int = 0
 var anim_timer: float = 0.0
 var anim_speed: float = 0.12
 var last_move_dir: Vector2 = Vector2.DOWN
+var facing_right: bool = true
+var near_portal: bool = false
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var weapon_pivot: Node2D = $WeaponPivot
@@ -42,12 +44,15 @@ var last_move_dir: Vector2 = Vector2.DOWN
 @onready var dash_particles: CPUParticles2D = $DashParticles
 @onready var hurtbox: Area2D = $Hurtbox
 @onready var hit_flash_timer: Timer = $HitFlashTimer
+@onready var portal_detector: Area2D = $PortalDetector
 
 func _ready() -> void:
 	apply_meta_upgrades()
 	_generate_sprite_texture()
 	hurtbox.body_entered.connect(_on_hurtbox_body_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
+	portal_detector.area_entered.connect(_on_portal_area_entered)
+	portal_detector.area_exited.connect(_on_portal_area_exited)
 	_give_starting_weapon()
 
 func _give_starting_weapon() -> void:
@@ -191,6 +196,12 @@ func _handle_movement(delta: float) -> void:
 	if input_dir != Vector2.ZERO:
 		velocity = input_dir * move_speed
 		last_move_dir = input_dir
+		if input_dir.x > 0:
+			facing_right = true
+			sprite.scale.x = abs(sprite.scale.x)
+		elif input_dir.x < 0:
+			facing_right = false
+			sprite.scale.x = -abs(sprite.scale.x)
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, move_speed * 10 * delta)
 
@@ -223,6 +234,9 @@ func _handle_actions() -> void:
 
 	if Input.is_action_just_pressed("reload") and current_weapon:
 		current_weapon.start_reload()
+
+	if Input.is_action_just_pressed("interact") and near_portal:
+		_use_portal()
 
 func _update_animation(input_dir: Vector2) -> void:
 	var fw = SPRITE_SIZE * SCALE
@@ -281,3 +295,15 @@ func die() -> void:
 	is_dead = true
 	sprite.modulate = Color(1, 0.3, 0.3, 1)
 	GameManager.game_over()
+
+func _on_portal_area_entered(area: Area2D) -> void:
+	near_portal = true
+
+func _on_portal_area_exited(area: Area2D) -> void:
+	near_portal = false
+
+func _use_portal() -> void:
+	RunManager.next_floor()
+	var level_generator = get_parent()
+	if level_generator and level_generator.has_method("generate_floor"):
+		level_generator.generate_floor()

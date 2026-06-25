@@ -1,11 +1,12 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/level_generator.gd" id="1_generator"]
 [ext_resource type="Script" path="res://scripts/levels/enemy_spawner.gd" id="2_enemy_spawner"]
 [ext_resource type="Script" path="res://scripts/levels/item_spawner.gd" id="3_item_spawner"]
 [ext_resource type="PackedScene" path="res://scenes/levels/room_template.tscn" id="4_room_template"]
-[ext_resource type="Script" path="res://scripts/player/player.gd" id="5_player_script"]
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="6_hud_script"]
+[ext_resource type="PackedScene" path="res://scenes/levels/portal.tscn" id="5_portal"]
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="6_player_script"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="7_hud_script"]
 
 [sub_resource type="CircleShape2D" id="circle_player"]
 radius = 18.0
@@ -13,15 +14,19 @@ radius = 18.0
 [sub_resource type="CircleShape2D" id="circle_hurtbox"]
 radius = 22.0
 
+[sub_resource type="CircleShape2D" id="circle_portal_detect"]
+radius = 60.0
+
 [node name="GameLevel" type="Node2D"]
 script = ExtResource("1_generator")
 room_templates = [ExtResource("4_room_template")]
+portal_template = ExtResource("5_portal")
 
 [node name="Player" type="CharacterBody2D" parent="." groups=["player"]]
 z_index = 10
 collision_layer = 2
 collision_mask = 1
-script = ExtResource("5_player_script")
+script = ExtResource("6_player_script")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
 shape = SubResource("circle_player")
@@ -55,6 +60,13 @@ shape = SubResource("circle_hurtbox")
 wait_time = 0.15
 one_shot = true
 
+[node name="PortalDetector" type="Area2D" parent="Player"]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/PortalDetector"]
+shape = SubResource("circle_portal_detect")
+
 [node name="Camera2D" type="Camera2D" parent="Player"]
 position_smoothing_enabled = true
 position_smoothing_speed = 8.0
@@ -70,7 +82,7 @@ script = ExtResource("2_enemy_spawner")
 script = ExtResource("3_item_spawner")
 
 [node name="HUD" type="CanvasLayer" parent="."]
-script = ExtResource("6_hud_script")
+script = ExtResource("7_hud_script")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HUD"]
 anchors_preset = 2
@@ -124,8 +136,9 @@ value = 100.0
 show_percentage = false
 
 [node name="AmmoLabel" type="Label" parent="HUD/VBoxContainer"]
-text = "12 / 12"
-theme_override_font_sizes/font_size = 18
+text = "10 / 10"
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.9, 0.85, 0.3, 1)
 
 [node name="FloorLabel" type="Label" parent="HUD/VBoxContainer"]
 text = "楼层 1"

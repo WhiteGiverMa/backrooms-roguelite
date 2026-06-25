@@ -8,9 +8,6 @@ extends Node
 func spawn_enemies(rooms: Array[Room]) -> void:
 	for i in range(rooms.size()):
 		var room = rooms[i]
-		if room.is_exit and boss_scene:
-			_spawn_boss(room)
-			continue
 		if i == 0:
 			continue
 
@@ -35,13 +32,3 @@ func spawn_enemies(rooms: Array[Room]) -> void:
 			enemy.z_index = 5
 			add_child(enemy)
 			room.enemies.append(enemy)
-
-func _spawn_boss(room: Room) -> void:
-	if not boss_scene:
-		return
-	var boss = boss_scene.instantiate()
-	boss.global_position = room.global_position + Vector2(0, -100)
-	boss.z_index = 5
-	boss.died.connect(room.check_cleared)
-	add_child(boss)
-	room.enemies.append(boss)

@@ -2,13 +2,14 @@ extends Node2D
 class_name LevelGenerator
 
 @export var room_templates: Array[PackedScene] = []
+@export var portal_template: PackedScene
 @export var rooms_per_floor: int = 12
 @export var room_size: Vector2 = Vector2(800, 600)
 
 var generated_rooms: Array[Room] = []
 var room_positions: Array[Vector2] = []
 var spawn_room: Room = null
-var exit_room: Room = null
+var portal_room: Room = null
 
 func _ready() -> void:
 	generate_floor()
@@ -19,6 +20,7 @@ func generate_floor() -> void:
 	_place_rooms()
 	_connect_rooms()
 	_place_doors()
+	_place_portal()
 	_place_player()
 	_place_enemies_and_items()
 
@@ -29,7 +31,7 @@ func _clear_floor() -> void:
 	generated_rooms.clear()
 	room_positions.clear()
 	spawn_room = null
-	exit_room = null
+	portal_room = null
 
 func _generate_room_layout() -> void:
 	var grid: Dictionary = {}
@@ -76,8 +78,6 @@ func _place_rooms() -> void:
 		generated_rooms.append(room)
 
 	spawn_room = generated_rooms[0]
-	exit_room = generated_rooms[generated_rooms.size() - 1]
-	exit_room.is_exit = true
 
 func _connect_rooms() -> void:
 	for i in generated_rooms.size():
@@ -93,9 +93,9 @@ func _connect_rooms() -> void:
 func _get_direction(from: Room, to: Room) -> int:
 	var diff = to.global_position - from.global_position
 	if abs(diff.x) > abs(diff.y):
-		return 3 if diff.x > 0 else 2  # RIGHT : LEFT
+		return 3 if diff.x > 0 else 2
 	else:
-		return 1 if diff.y > 0 else 0  # DOWN : UP
+		return 1 if diff.y > 0 else 0
 
 func _place_doors() -> void:
 	var placed_pairs: Dictionary = {}
@@ -114,6 +114,20 @@ func _place_doors() -> void:
 
 			a.add_door(_get_direction(a, b))
 			b.add_door(_get_direction(b, a))
+
+func _place_portal() -> void:
+	if not portal_template or generated_rooms.size() < 2:
+		return
+
+	var candidates = generated_rooms.duplicate()
+	candidates.erase(spawn_room)
+	if candidates.is_empty():
+		return
+
+	portal_room = candidates[randi() % candidates.size()]
+	var portal = portal_template.instantiate()
+	portal.position = Vector2(0, 0)
+	portal_room.add_child(portal)
 
 func _place_player() -> void:
 	var player_node = get_tree().get_first_node_in_group("player")
