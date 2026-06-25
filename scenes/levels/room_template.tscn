@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/room.gd" id="1_script"]
 
@@ -10,6 +10,12 @@ size = Vector2(800, 8)
 
 [sub_resource type="RectangleShape2D" id="rect_side"]
 size = Vector2(8, 600)
+
+[sub_resource type="RectangleShape2D" id="rect_lock_h"]
+size = Vector2(100, 8)
+
+[sub_resource type="RectangleShape2D" id="rect_lock_v"]
+size = Vector2(8, 100)
 
 [node name="RoomTemplate" type="Node2D"]
 z_index = 0
@@ -84,11 +90,34 @@ offset_right = 408.0
 offset_bottom = 50.0
 color = Color(0.2, 0.7, 0.2, 1)
 
+[node name="LockCollisionTop" type="CollisionShape2D" parent="."]
+position = Vector2(0, -244)
+shape = SubResource("rect_lock_h")
+disabled = true
+
+[node name="LockCollisionBottom" type="CollisionShape2D" parent="."]
+position = Vector2(0, 244)
+shape = SubResource("rect_lock_h")
+disabled = true
+
+[node name="LockCollisionLeft" type="CollisionShape2D" parent="."]
+position = Vector2(-324, 0)
+shape = SubResource("rect_lock_v")
+disabled = true
+
+[node name="LockCollisionRight" type="CollisionShape2D" parent="."]
+position = Vector2(324, 0)
+shape = SubResource("rect_lock_v")
+disabled = true
+
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
 collision_layer = 1
 
 [node name="ExitIndicator" type="Sprite2D" parent="."]
 visible = false
+
+[node name="ChestSpawn" type="Marker2D" parent="."]
+position = Vector2(0, -50)
 
 [node name="SpawnPoint1" type="Marker2D" parent="."]
 position = Vector2(-200, 0)

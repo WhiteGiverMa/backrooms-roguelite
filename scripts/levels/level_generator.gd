@@ -3,6 +3,7 @@ class_name LevelGenerator
 
 @export var room_templates: Array[PackedScene] = []
 @export var portal_template: PackedScene
+@export var chest_template: PackedScene
 @export var room_size: Vector2 = Vector2(800, 600)
 @export var generation_radius: int = 2
 @export var cleanup_radius: int = 4
@@ -86,7 +87,21 @@ func _generate_room_at(grid_pos: Vector2i) -> Room:
 		rooms_since_portal = 0
 		portal_target = randi_range(portal_interval_min, portal_interval_max)
 
+	if grid_pos != Vector2i.ZERO:
+		var roll = randf()
+		if roll < 0.12:
+			room.make_lockable()
+		elif roll < 0.25 and chest_template:
+			room.is_chest_room = true
+			_place_chest_in(room)
+
 	return room
+
+func _place_chest_in(room: Room) -> void:
+	var chest = chest_template.instantiate()
+	var marker = room.get_node_or_null("ChestSpawn") as Marker2D
+	chest.position = marker.position if marker else Vector2(0, -50)
+	room.add_child(chest)
 
 func _place_portal_in(room: Room) -> void:
 	for child in room.get_children():

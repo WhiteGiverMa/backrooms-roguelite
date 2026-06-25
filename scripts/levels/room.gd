@@ -8,10 +8,16 @@ class_name Room
 var enemies: Array[Enemy] = []
 var items: Array[Node2D] = []
 var is_cleared: bool = false
+var is_lockable_room: bool = false
+var is_chest_room: bool = false
 var has_door_top: bool = false
 var has_door_bottom: bool = false
 var has_door_left: bool = false
 var has_door_right: bool = false
+var door_locked_top: bool = false
+var door_locked_bottom: bool = false
+var door_locked_left: bool = false
+var door_locked_right: bool = false
 
 const DOOR_GAP: float = 100.0
 const WALL_THICKNESS: float = 8.0
@@ -24,6 +30,10 @@ const ROOM_HALF_H: float = 300.0
 @onready var door_bottom: ColorRect = $DoorBottom
 @onready var door_left: ColorRect = $DoorLeft
 @onready var door_right: ColorRect = $DoorRight
+@onready var lock_collision_top: CollisionShape2D = $LockCollisionTop
+@onready var lock_collision_bottom: CollisionShape2D = $LockCollisionBottom
+@onready var lock_collision_left: CollisionShape2D = $LockCollisionLeft
+@onready var lock_collision_right: CollisionShape2D = $LockCollisionRight
 
 func _ready() -> void:
 	if exit_indicator:
@@ -34,6 +44,10 @@ func add_connection(other: Room) -> void:
 	if other in connections:
 		return
 	connections.append(other)
+
+func make_lockable() -> void:
+	is_lockable_room = true
+	_update_door_colors()
 
 func add_door(dir: int) -> void:
 	match dir:
@@ -50,6 +64,7 @@ func add_door(dir: int) -> void:
 			has_door_right = true
 			door_right.visible = true
 	_build_wall_collisions()
+	_update_door_colors()
 
 func has_door(dir: int) -> bool:
 	match dir:
@@ -59,13 +74,72 @@ func has_door(dir: int) -> bool:
 		3: return has_door_right
 	return false
 
+func _update_door_colors() -> void:
+	if is_lockable_room:
+		_update_lockable_door(door_top, door_locked_top)
+		_update_lockable_door(door_bottom, door_locked_bottom)
+		_update_lockable_door(door_left, door_locked_left)
+		_update_lockable_door(door_right, door_locked_right)
+
+func _update_lockable_door(door: ColorRect, locked: bool) -> void:
+	if not door.visible:
+		return
+	door.color = Color(0.7, 0.2, 0.2, 1) if locked else Color(0.5, 0.5, 0.5, 1)
+
+func get_nearest_door_dir(global_pos: Vector2) -> int:
+	if not is_lockable_room:
+		return -1
+	var local = to_local(global_pos)
+	var best_dir := -1
+	var best_dist := 80.0
+	var checks = [
+		[0, Vector2(0, -ROOM_HALF_H)],
+		[1, Vector2(0, ROOM_HALF_H)],
+		[2, Vector2(-ROOM_HALF_W, 0)],
+		[3, Vector2(ROOM_HALF_W, 0)],
+	]
+	for c in checks:
+		var d = c[0] as int
+		if not has_door(d):
+			continue
+		var dist = local.distance_to(c[1] as Vector2)
+		if dist < best_dist:
+			best_dist = dist
+			best_dir = d
+	return best_dir
+
+func toggle_door_lock(dir: int) -> bool:
+	if not is_lockable_room:
+		return false
+	match dir:
+		0: door_locked_top = not door_locked_top
+		1: door_locked_bottom = not door_locked_bottom
+		2: door_locked_left = not door_locked_left
+		3: door_locked_right = not door_locked_right
+	_update_door_colors()
+	_update_lock_collisions()
+	return is_door_locked(dir)
+
+func is_door_locked(dir: int) -> bool:
+	match dir:
+		0: return door_locked_top
+		1: return door_locked_bottom
+		2: return door_locked_left
+		3: return door_locked_right
+	return false
+
+func _update_lock_collisions() -> void:
+	lock_collision_top.disabled = not door_locked_top
+	lock_collision_bottom.disabled = not door_locked_bottom
+	lock_collision_left.disabled = not door_locked_left
+	lock_collision_right.disabled = not door_locked_right
+
 func _clear_collisions() -> void:
 	for child in static_body.get_children():
 		child.queue_free()
 
 func _build_wall_collisions() -> void:
 	_clear_collisions()
-
 	var hw = ROOM_HALF_W
 	var hh = ROOM_HALF_H
 	var wt = WALL_THICKNESS
@@ -74,17 +148,14 @@ func _build_wall_collisions() -> void:
 		_add_collision_rect(Vector2(0, -hh - wt / 2.0), Vector2(hw * 2, wt))
 	else:
 		_add_top_bottom_segments(-hh - wt / 2.0, hw, wt)
-
 	if not has_door_bottom:
 		_add_collision_rect(Vector2(0, hh + wt / 2.0), Vector2(hw * 2, wt))
 	else:
 		_add_top_bottom_segments(hh + wt / 2.0, hw, wt)
-
 	if not has_door_left:
 		_add_collision_rect(Vector2(-hw - wt / 2.0, 0), Vector2(wt, hh * 2))
 	else:
 		_add_left_right_segments(-hw - wt / 2.0, hh, wt)
-
 	if not has_door_right:
 		_add_collision_rect(Vector2(hw + wt / 2.0, 0), Vector2(wt, hh * 2))
 	else:

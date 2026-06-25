@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="CircleShape2D" id="circle_chest"]
+radius = 40.0
+
+[node name="Chest" type="Area2D"]
+collision_layer = 0
+collision_mask = 16
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("circle_chest")
+
+[node name="ChestVisual" type="ColorRect" parent="."]
+offset_left = -20.0
+offset_top = -15.0
+offset_right = 20.0
+offset_bottom = 15.0
+color = Color(0.6, 0.4, 0.15, 1)
+
+[node name="ChestLabel" type="Label" parent="."]
+offset_left = -30.0
+offset_top = -35.0
+offset_right = 30.0
+offset_bottom = -20.0
+text = "宝箱 [E]"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.9, 0.75, 0.3, 1)

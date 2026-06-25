@@ -37,6 +37,7 @@ var anim_speed: float = 0.12
 var last_move_dir: Vector2 = Vector2.DOWN
 var facing_right: bool = true
 var near_portal: bool = false
+var near_chest: Area2D = null
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var weapon_pivot: Node2D = $WeaponPivot
@@ -45,6 +46,7 @@ var near_portal: bool = false
 @onready var hurtbox: Area2D = $Hurtbox
 @onready var hit_flash_timer: Timer = $HitFlashTimer
 @onready var portal_detector: Area2D = $PortalDetector
+@onready var interact_detector: Area2D = $InteractDetector
 
 func _ready() -> void:
 	apply_meta_upgrades()
@@ -53,6 +55,8 @@ func _ready() -> void:
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	portal_detector.area_entered.connect(_on_portal_area_entered)
 	portal_detector.area_exited.connect(_on_portal_area_exited)
+	interact_detector.area_entered.connect(_on_interact_area_entered)
+	interact_detector.area_exited.connect(_on_interact_area_exited)
 	_give_starting_weapon()
 
 func _give_starting_weapon() -> void:
@@ -235,8 +239,13 @@ func _handle_actions() -> void:
 	if Input.is_action_just_pressed("reload") and current_weapon:
 		current_weapon.start_reload()
 
-	if Input.is_action_just_pressed("interact") and near_portal:
-		_use_portal()
+	if Input.is_action_just_pressed("interact"):
+		if near_chest:
+			_open_chest()
+		elif near_portal:
+			_use_portal()
+		else:
+			_try_toggle_door()
 
 func _update_animation(input_dir: Vector2) -> void:
 	var fw = SPRITE_SIZE * SCALE
@@ -301,6 +310,43 @@ func _on_portal_area_entered(area: Area2D) -> void:
 
 func _on_portal_area_exited(area: Area2D) -> void:
 	near_portal = false
+
+func _on_interact_area_entered(area: Area2D) -> void:
+	if area.name == "Chest":
+		near_chest = area
+
+func _on_interact_area_exited(area: Area2D) -> void:
+	if near_chest == area:
+		near_chest = null
+
+func _find_room_at(pos: Vector2) -> Room:
+	var generator = get_parent()
+	if generator and generator.has_method("_world_to_grid"):
+		var gp = generator._world_to_grid(pos)
+		var rm = generator.get("room_map") as Dictionary
+		if rm and rm.has(gp):
+			return rm[gp] as Room
+	return null
+
+func _try_toggle_door() -> void:
+	var room = _find_room_at(global_position)
+	if not room or not room.is_lockable_room:
+		return
+	var d = room.get_nearest_door_dir(global_position)
+	if d >= 0:
+		room.toggle_door_lock(d)
+
+func _open_chest() -> void:
+	if not near_chest:
+		return
+	var item = near_chest
+	near_chest = null
+	if current_weapon:
+		current_weapon.current_ammo = current_weapon.max_ammo
+		RunManager.ammo_changed.emit(current_weapon.current_ammo, current_weapon.max_ammo)
+	health = max_health
+	health_changed.emit(health, max_health)
+	item.queue_free()
 
 func _use_portal() -> void:
 	RunManager.next_floor()
