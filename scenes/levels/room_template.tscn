@@ -91,22 +91,22 @@ offset_bottom = 50.0
 color = Color(0.2, 0.7, 0.2, 1)
 
 [node name="LockCollisionTop" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(0, -244)
+position = Vector2(0, -304)
 shape = SubResource("rect_lock_h")
 disabled = true
 
 [node name="LockCollisionBottom" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(0, 244)
+position = Vector2(0, 304)
 shape = SubResource("rect_lock_h")
 disabled = true
 
 [node name="LockCollisionLeft" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(-324, 0)
+position = Vector2(-404, 0)
 shape = SubResource("rect_lock_v")
 disabled = true
 
 [node name="LockCollisionRight" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(324, 0)
+position = Vector2(404, 0)
 shape = SubResource("rect_lock_v")
 disabled = true
 

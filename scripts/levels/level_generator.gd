@@ -13,7 +13,7 @@ class_name LevelGenerator
 const DIRS: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
 
 var room_map: Dictionary = {}
-var corridors: Array[ColorRect] = []
+var corridors: Array[Sprite2D] = []
 var rooms_since_portal: int = 0
 var portal_target: int = 0
 var player_grid: Vector2i = Vector2i.ZERO
@@ -83,7 +83,6 @@ func _generate_room_at(grid_pos: Vector2i) -> Room:
 			room.add_door(room_dir)
 			neighbor.add_door(opp_dir)
 			_add_corridor(room, neighbor, room_dir)
-			break
 
 	rooms_since_portal += 1
 	if rooms_since_portal >= portal_target and portal_template:
@@ -102,17 +101,20 @@ func _generate_room_at(grid_pos: Vector2i) -> Room:
 	return room
 
 func _add_corridor(a: Room, b: Room, dir: int) -> void:
-	var corridor = ColorRect.new()
-	corridor.color = Color(0.18, 0.16, 0.12, 1)
+	var sprite = Sprite2D.new()
+	sprite.centered = true
 	var mid = (a.global_position + b.global_position) / 2.0
+	sprite.position = mid
+
+	var img: Image
 	if dir == 0 or dir == 1:
-		corridor.position = mid - Vector2(50, 4)
-		corridor.size = Vector2(100, 8)
+		img = Image.create(int(room_size.x), 12, false, Image.FORMAT_RGBA8)
 	else:
-		corridor.position = mid - Vector2(4, 50)
-		corridor.size = Vector2(8, 100)
-	add_child(corridor)
-	corridors.append(corridor)
+		img = Image.create(12, int(room_size.y), false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.18, 0.16, 0.12, 1))
+	sprite.texture = ImageTexture.create_from_image(img)
+	add_child(sprite)
+	corridors.append(sprite)
 
 func _place_chest_in(room: Room) -> void:
 	var chest = chest_template.instantiate()
