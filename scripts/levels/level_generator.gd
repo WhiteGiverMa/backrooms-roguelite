@@ -56,10 +56,10 @@ func _clear_floor() -> void:
 	corridors.clear()
 
 func _world_to_grid(pos: Vector2) -> Vector2i:
-	return Vector2i(roundi(pos.x / 800.0), roundi(pos.y / 600.0))
+	return Vector2i(roundi(pos.x / 900.0), roundi(pos.y / 700.0))
 
 func _grid_to_world(grid: Vector2i) -> Vector2:
-	return Vector2(grid) * Vector2(800, 600)
+	return Vector2(grid) * Vector2(900, 700)
 
 func _ensure_area_around(center: Vector2i) -> void:
 	for dx in range(-generation_radius, generation_radius + 1):
@@ -74,7 +74,7 @@ func _generate_room_at(grid_pos: Vector2i) -> Room:
 	var wall_col = floor_col * 1.8
 
 	var room = room_template.instantiate() as Room
-	room.global_position = _grid_to_world(grid_pos) + Vector2(randf_range(-80, 80), randf_range(-60, 60))
+	room.global_position = _grid_to_world(grid_pos)
 	add_child(room)
 	room.configure(size.x, size.y, floor_col, wall_col)
 	room_map[grid_pos] = room
@@ -99,7 +99,7 @@ func _generate_room_at(grid_pos: Vector2i) -> Room:
 		var opp_dir = _vector2i_to_door_dir(-dir)
 		room.add_door(room_dir)
 		neighbor.add_door(opp_dir)
-		_add_corridor(room, neighbor, room_dir, grid_pos, n_pos)
+		_add_corridor(room, neighbor, room_dir)
 
 	rooms_since_portal += 1
 	if rooms_since_portal >= portal_target and portal_template:
@@ -116,20 +116,20 @@ func _generate_room_at(grid_pos: Vector2i) -> Room:
 
 	return room
 
-func _add_corridor(a: Room, b: Room, dir: int, ga: Vector2i, gb: Vector2i) -> void:
+func _add_corridor(a: Room, b: Room, dir: int) -> void:
 	var sprite = Sprite2D.new()
 	sprite.centered = true
 	var mid = (a.global_position + b.global_position) / 2.0
 	sprite.position = mid
 
-	var gap = Vector2(abs(ga.x - gb.x) * 800.0, abs(ga.y - gb.y) * 600.0)
+	var dist = a.global_position.distance_to(b.global_position)
 	var img: Image
 	if dir == 0 or dir == 1:
-		var cw = int(gap.x) if gap.x > 0 else int(a.room_half_w * 2)
-		img = Image.create(maxi(20, cw), 12, false, Image.FORMAT_RGBA8)
+		var cw = maxi(20, int(dist))
+		img = Image.create(cw, 12, false, Image.FORMAT_RGBA8)
 	else:
-		var ch = int(gap.y) if gap.y > 0 else int(a.room_half_h * 2)
-		img = Image.create(12, maxi(20, ch), false, Image.FORMAT_RGBA8)
+		var ch = maxi(20, int(dist))
+		img = Image.create(12, ch, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0.18, 0.16, 0.12, 1))
 	sprite.texture = ImageTexture.create_from_image(img)
 	add_child(sprite)
