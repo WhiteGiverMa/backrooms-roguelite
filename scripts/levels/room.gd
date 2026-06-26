@@ -117,10 +117,18 @@ func make_lockable() -> void:
 
 func add_door(dir: int) -> void:
 	match dir:
-		0: has_door_top = true; door_top.visible = true
-		1: has_door_bottom = true; door_bottom.visible = true
-		2: has_door_left = true; door_left.visible = true
-		3: has_door_right = true; door_right.visible = true
+		0:
+			has_door_top = true
+			door_top.visible = true
+		1:
+			has_door_bottom = true
+			door_bottom.visible = true
+		2:
+			has_door_left = true
+			door_left.visible = true
+		3:
+			has_door_right = true
+			door_right.visible = true
 	_build_wall_collisions()
 	_update_door_colors()
 	_update_door_positions()
@@ -155,21 +163,36 @@ func _update_lockable_door(door: ColorRect, locked: bool) -> void:
 	door.color = Color(0.7, 0.2, 0.2, 1) if locked else Color(0.5, 0.5, 0.5, 1)
 
 func get_nearest_door_dir(global_pos: Vector2) -> int:
-	if not is_lockable_room: return -1
+	if not is_lockable_room:
+		return -1
 	var local = to_local(global_pos)
-	var best_dir := -1; var best_dist := 80.0
+	var best_dir := -1
+	var best_dist := 80.0
 	var checks = [[0, Vector2(0, -room_half_h)], [1, Vector2(0, room_half_h)], [2, Vector2(-room_half_w, 0)], [3, Vector2(room_half_w, 0)]]
 	for c in checks:
 		var d = c[0] as int
-		if not has_door(d): continue
+		if not has_door(d):
+			continue
 		var dist = local.distance_to(c[1] as Vector2)
-		if dist < best_dist: best_dist = dist; best_dir = d
+		if dist < best_dist:
+			best_dist = dist
+			best_dir = d
 	return best_dir
 
 func toggle_door_lock(dir: int) -> bool:
-	if not is_lockable_room: return false
-	match dir: 0: door_locked_top = not door_locked_top; 1: door_locked_bottom = not door_locked_bottom; 2: door_locked_left = not door_locked_left; 3: door_locked_right = not door_locked_right
-	_update_door_colors(); _update_lock_collisions()
+	if not is_lockable_room:
+		return false
+	match dir:
+		0:
+			door_locked_top = not door_locked_top
+		1:
+			door_locked_bottom = not door_locked_bottom
+		2:
+			door_locked_left = not door_locked_left
+		3:
+			door_locked_right = not door_locked_right
+	_update_door_colors()
+	_update_lock_collisions()
 	return is_door_locked(dir)
 
 func is_door_locked(dir: int) -> bool:
@@ -193,29 +216,44 @@ func _clear_collisions() -> void:
 
 func _build_wall_collisions() -> void:
 	_clear_collisions()
-	var hw = room_half_w; var hh = room_half_h; var wt = WALL_THICKNESS
-	if not has_door_top: _add_collision_rect(Vector2(0, -hh - wt / 2.0), Vector2(hw * 2, wt))
-	else: _add_top_bottom_segments(-hh - wt / 2.0, hw, wt)
-	if not has_door_bottom: _add_collision_rect(Vector2(0, hh + wt / 2.0), Vector2(hw * 2, wt))
-	else: _add_top_bottom_segments(hh + wt / 2.0, hw, wt)
-	if not has_door_left: _add_collision_rect(Vector2(-hw - wt / 2.0, 0), Vector2(wt, hh * 2))
-	else: _add_left_right_segments(-hw - wt / 2.0, hh, wt)
-	if not has_door_right: _add_collision_rect(Vector2(hw + wt / 2.0, 0), Vector2(wt, hh * 2))
-	else: _add_left_right_segments(hw + wt / 2.0, hh, wt)
+	var hw = room_half_w
+	var hh = room_half_h
+	var wt = WALL_THICKNESS
+	if not has_door_top:
+		_add_collision_rect(Vector2(0, -hh - wt / 2.0), Vector2(hw * 2, wt))
+	else:
+		_add_top_bottom_segments(-hh - wt / 2.0, hw, wt)
+	if not has_door_bottom:
+		_add_collision_rect(Vector2(0, hh + wt / 2.0), Vector2(hw * 2, wt))
+	else:
+		_add_top_bottom_segments(hh + wt / 2.0, hw, wt)
+	if not has_door_left:
+		_add_collision_rect(Vector2(-hw - wt / 2.0, 0), Vector2(wt, hh * 2))
+	else:
+		_add_left_right_segments(-hw - wt / 2.0, hh, wt)
+	if not has_door_right:
+		_add_collision_rect(Vector2(hw + wt / 2.0, 0), Vector2(wt, hh * 2))
+	else:
+		_add_left_right_segments(hw + wt / 2.0, hh, wt)
 
 func _add_top_bottom_segments(y: float, hw: float, wt: float) -> void:
-	var half_gap = DOOR_GAP / 2.0; var seg_width = hw - half_gap
+	var half_gap = DOOR_GAP / 2.0
+	var seg_width = hw - half_gap
 	_add_collision_rect(Vector2(-hw + seg_width / 2.0, y), Vector2(seg_width, wt))
 	_add_collision_rect(Vector2(hw - seg_width / 2.0, y), Vector2(seg_width, wt))
 
 func _add_left_right_segments(x: float, hh: float, wt: float) -> void:
-	var half_gap = DOOR_GAP / 2.0; var seg_height = hh - half_gap
+	var half_gap = DOOR_GAP / 2.0
+	var seg_height = hh - half_gap
 	_add_collision_rect(Vector2(x, -hh + seg_height / 2.0), Vector2(wt, seg_height))
 	_add_collision_rect(Vector2(x, hh - seg_height / 2.0), Vector2(wt, seg_height))
 
 func _add_collision_rect(pos: Vector2, size: Vector2) -> void:
-	var shape = RectangleShape2D.new(); shape.size = size
-	var col = CollisionShape2D.new(); col.shape = shape; col.position = pos
+	var shape = RectangleShape2D.new()
+	shape.size = size
+	var col = CollisionShape2D.new()
+	col.shape = shape
+	col.position = pos
 	static_body.add_child(col)
 
 func on_player_enter() -> void: pass
@@ -223,11 +261,14 @@ func on_player_exit() -> void: pass
 
 func check_cleared() -> void:
 	for enemy in enemies:
-		if is_instance_valid(enemy) and not enemy.is_dead: return
-	is_cleared = true; RunManager.add_room_cleared()
+		if is_instance_valid(enemy) and not enemy.is_dead:
+			return
+	is_cleared = true
+	RunManager.add_room_cleared()
 
 func get_spawn_points() -> Array[Marker2D]:
 	var points: Array[Marker2D] = []
 	for child in get_children():
-		if child is Marker2D and child.name.begins_with("SpawnPoint"): points.append(child)
+		if child is Marker2D and child.name.begins_with("SpawnPoint"):
+			points.append(child)
 	return points

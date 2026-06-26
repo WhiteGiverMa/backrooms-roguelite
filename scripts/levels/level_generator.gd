@@ -47,10 +47,12 @@ func generate_floor() -> void:
 
 func _clear_floor() -> void:
 	for room in room_map.values():
-		if is_instance_valid(room): room.queue_free()
+		if is_instance_valid(room):
+			room.queue_free()
 	room_map.clear()
 	for c in corridors:
-		if is_instance_valid(c): c.queue_free()
+		if is_instance_valid(c):
+			c.queue_free()
 	corridors.clear()
 
 func _world_to_grid(pos: Vector2) -> Vector2i:
@@ -140,7 +142,8 @@ func _place_chest_in(room: Room) -> void:
 
 func _place_portal_in(room: Room) -> void:
 	for child in room.get_children():
-		if child is Area2D and child.name.begins_with("Portal"): return
+		if child is Area2D and child.name.begins_with("Portal"):
+			return
 	var portal = portal_template.instantiate()
 	portal.position = Vector2(0, 0)
 	room.add_child(portal)
@@ -153,9 +156,12 @@ func _cleanup_distant(center: Vector2i) -> void:
 			to_remove.append(gp)
 	for gp in to_remove:
 		var room = room_map[gp] as Room
-		if not is_instance_valid(room): room_map.erase(gp); continue
+		if not is_instance_valid(room):
+			room_map.erase(gp)
+			continue
 		for other in room.connections:
-			if not is_instance_valid(other): continue
+			if not is_instance_valid(other):
+				continue
 			other.connections.erase(room)
 			var d = _get_dir_between(gp, _world_to_grid(other.global_position))
 			_disable_door(other, d)
@@ -205,8 +211,11 @@ func _place_player() -> void:
 
 func _place_enemies_and_items() -> void:
 	var rooms_array: Array[Room] = []
-	for room in room_map.values(): rooms_array.append(room)
+	for room in room_map.values():
+		rooms_array.append(room)
 	var enemy_spawner = get_node_or_null("EnemySpawner")
-	if enemy_spawner: enemy_spawner.spawn_enemies(rooms_array)
+	if enemy_spawner:
+		enemy_spawner.spawn_enemies(rooms_array)
 	var item_spawner = get_node_or_null("ItemSpawner")
-	if item_spawner: item_spawner.spawn_items(rooms_array)
+	if item_spawner:
+		item_spawner.spawn_items(rooms_array)
