@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://drk8j2j3p4w6a"]
+
+[ext_resource type="Script" path="res://scripts/systems/pickup.gd" id="1_pickup_script"]
+
+[sub_resource type="CircleShape2D" id="circle_pickup"]
+radius = 14.0
+
+[node name="SanityPickup" type="Area2D" groups=["pickup"]]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_pickup_script")
+pickup_type = 2
+value = 20.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("circle_pickup")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = true

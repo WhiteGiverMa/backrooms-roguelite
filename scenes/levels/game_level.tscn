@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/level_generator.gd" id="1_generator"]
 [ext_resource type="Script" path="res://scripts/levels/enemy_spawner.gd" id="2_enemy_spawner"]
@@ -12,6 +12,12 @@
 [ext_resource type="PackedScene" path="res://scenes/levels/chest.tscn" id="10_chest"]
 [ext_resource type="Script" path="res://scripts/ui/inventory.gd" id="11_inventory"]
 [ext_resource type="Script" path="res://scripts/ui/hotbar.gd" id="12_hotbar"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/health_pickup.tscn" id="13_health_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/ammo_pickup.tscn" id="14_ammo_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/sanity_pickup.tscn" id="15_sanity_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/currency_pickup.tscn" id="16_currency_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/dagger_pickup.tscn" id="17_dagger_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/stun_gun_pickup.tscn" id="18_stun_gun_pickup"]
 
 [sub_resource type="CircleShape2D" id="circle_player"]
 radius = 18.0
@@ -102,6 +108,11 @@ enemy_scenes = [ExtResource("6_wanderer")]
 
 [node name="ItemSpawner" type="Node" parent="."]
 script = ExtResource("3_item_spawner")
+health_pickup = ExtResource("13_health_pickup")
+ammo_pickup = ExtResource("14_ammo_pickup")
+sanity_pickup = ExtResource("15_sanity_pickup")
+currency_pickup = ExtResource("16_currency_pickup")
+weapon_pickups = [ExtResource("17_dagger_pickup"), ExtResource("18_stun_gun_pickup")]
 
 [node name="FogOfWar" type="CanvasLayer" parent="." groups=["fog_of_war"]]
 layer = 1

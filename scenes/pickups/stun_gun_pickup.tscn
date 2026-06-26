@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://gul8m2n3p4w9d"]
+
+[ext_resource type="Script" path="res://scripts/systems/pickup.gd" id="1_pickup_script"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/stun_gun.tscn" id="2_stun_gun_scene"]
+
+[sub_resource type="CircleShape2D" id="circle_pickup"]
+radius = 14.0
+
+[node name="StunGunPickup" type="Area2D" groups=["pickup"]]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_pickup_script")
+pickup_type = 3
+weapon_scene = ExtResource("2_stun_gun_scene")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("circle_pickup")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = true
