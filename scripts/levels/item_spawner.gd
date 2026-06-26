@@ -1,7 +1,7 @@
 extends Node
 
 @export var health_pickup: PackedScene
-@export var ammo_pickup: PackedScene
+@export var ammo_pickups: Array[PackedScene] = []
 @export var sanity_pickup: PackedScene
 @export var weapon_pickups: Array[PackedScene] = []
 @export var currency_pickup: PackedScene
@@ -30,8 +30,8 @@ func spawn_items_in_rooms(rooms: Array[Room], skip_start_room: bool = false) -> 
 			add_child(item)
 			room.items.append(item)
 
-		elif roll < 0.5 and ammo_pickup:
-			var item = ammo_pickup.instantiate()
+		elif roll < 0.5 and not ammo_pickups.is_empty():
+			var item = ammo_pickups[randi() % ammo_pickups.size()].instantiate()
 			item.global_position = spawn_points[randi() % spawn_points.size()].global_position
 			add_child(item)
 			room.items.append(item)
