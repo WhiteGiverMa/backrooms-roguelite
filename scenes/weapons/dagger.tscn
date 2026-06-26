@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqk8h2j3p4w5x"]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon.gd" id="1_weapon_script"]
+
+[node name="Dagger" type="Node2D"]
+script = ExtResource("1_weapon_script")
+weapon_name = "匕首"
+weapon_kind = 1
+melee_range = 50.0
+melee_angle = 70.0
+melee_damage = 30.0
+fire_rate = 0.4
