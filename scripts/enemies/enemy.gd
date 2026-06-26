@@ -22,6 +22,9 @@ var player: Player = null
 var attack_timer: float = 0.0
 var patrol_index: int = 0
 var is_dead: bool = false
+## 状态效果
+var is_stunned: bool = false
+var stun_timer: float = 0.0
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var detection_area: Area2D = $DetectionArea
@@ -81,6 +84,14 @@ func _generate_sprite() -> void:
 
 func _physics_process(delta: float) -> void:
 	if is_dead or GameManager.current_state != GameManager.GameState.PLAYING:
+		return
+
+	if is_stunned:
+		stun_timer -= delta
+		if stun_timer <= 0.0:
+			is_stunned = false
+		velocity = Vector2.ZERO
+		move_and_slide()
 		return
 
 	attack_timer = max(0.0, attack_timer - delta)
@@ -181,3 +192,9 @@ func die() -> void:
 	RunManager.add_kill()
 	died.emit()
 	queue_free()
+
+
+func apply_status(effect: String, duration: float) -> void:
+	if effect == "stun":
+		is_stunned = true
+		stun_timer = duration
