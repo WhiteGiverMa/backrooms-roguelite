@@ -64,7 +64,10 @@ func _generate_icons() -> void:
 		for x in range(48):
 			var c = p_big.get_pixel(x, y)
 			if c.a > 0:
-				p_dst.set_pixel(ox + x, oy + y, c)
+				var px: int =ox + x
+				var py: int =oy + y
+				if px >= 0 and px < ICON_SIZE and py >= 0 and py < ICON_SIZE:
+					p_dst.set_pixel(px, py, c)
 	_icons["pistol"] = ImageTexture.create_from_image(p_dst)
 
 	# 匕首 16x16 → 2x → 32x32
@@ -129,7 +132,10 @@ func _generate_icons() -> void:
 		for x in range(48):
 			var c = s_big.get_pixel(x, y)
 			if c.a > 0:
-				s_dst.set_pixel(ox + x, oy + y, c)
+				var px: int =ox + x
+				var py: int =oy + y
+				if px >= 0 and px < ICON_SIZE and py >= 0 and py < ICON_SIZE:
+					s_dst.set_pixel(px, py, c)
 	_icons["stun_gun"] = ImageTexture.create_from_image(s_dst)
 
 	# 手电筒 20x8 2x → 40x16 → center 32x32
@@ -163,11 +169,14 @@ func _generate_icons() -> void:
 		for x in range(40):
 			var c = f_big.get_pixel(x, y)
 			if c.a > 0:
-				f_dst.set_pixel(fox + x, foy + y, c)
+				var px: int =fox + x
+				var py: int =foy + y
+				if px >= 0 and px < ICON_SIZE and py >= 0 and py < ICON_SIZE:
+					f_dst.set_pixel(px, py, c)
 	_icons["flashlight"] = ImageTexture.create_from_image(f_dst)
 
 	# 手电筒开启（暖光版）
-	var f_on_img = Image.create(20, 8, false, Image.FORMAT_RGBA8)
+	var f_on_img = Image.create(22, 8, false, Image.FORMAT_RGBA8)
 	f_on_img.fill(Color(0,0,0,0))
 	for x in range(3, 18):
 		for y in range(2, 6):
@@ -199,7 +208,10 @@ func _generate_icons() -> void:
 		for x in range(44):
 			var c = f_on_big.get_pixel(x, y)
 			if c.a > 0:
-				f_on_dst.set_pixel(fon_ox + x, fon_oy + y, c)
+				var px: int =fon_ox + x
+				var py: int =fon_oy + y
+				if px >= 0 and px < ICON_SIZE and py >= 0 and py < ICON_SIZE:
+					f_on_dst.set_pixel(px, py, c)
 	_icons["flashlight_on"] = ImageTexture.create_from_image(f_on_dst)
 
 

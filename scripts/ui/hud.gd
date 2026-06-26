@@ -17,9 +17,6 @@ func _ready() -> void:
 		player.health_changed.connect(_on_health_changed)
 		player.stamina_changed.connect(_on_stamina_changed)
 		player.weapon_changed.connect(_on_weapon_changed)
-		# 弥补初始化竞态：Player._ready 先于 HUD._ready，首把武器 equip 信号已丢失
-		if player.current_weapon:
-			_on_weapon_changed(player.current_weapon)
 
 	RunManager.floor_changed.connect(_on_floor_changed)
 	RunManager.sanity_changed.connect(_on_sanity_changed)
@@ -39,6 +36,10 @@ func _ready() -> void:
 	# 移到 AmmoLabel 之后
 	var ammo_idx = $VBoxContainer/AmmoLabel.get_index()
 	$VBoxContainer.move_child(reload_bar, ammo_idx + 1)
+
+	# 弥补初始化竞态：Player._ready 先于 HUD._ready，首把武器 equip 信号已丢失
+	if player and player.current_weapon:
+		_on_weapon_changed(player.current_weapon)
 
 func _on_health_changed(current: float, max_hp: float) -> void:
 	health_bar.max_value = max_hp
