@@ -27,7 +27,7 @@ radius = 50.0
 
 [node name="GameLevel" type="Node2D"]
 script = ExtResource("1_generator")
-room_templates = [ExtResource("4_room_template")]
+room_template = ExtResource("4_room_template")
 portal_template = ExtResource("5_portal")
 chest_template = ExtResource("10_chest")
 
