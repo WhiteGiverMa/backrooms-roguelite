@@ -5,15 +5,21 @@ extends Node
 @export var enemies_per_floor_max: int = 3
 @export var patrol_point_count: int = 4
 
-func spawn_enemies(rooms: Array[Room]) -> void:
-	_clear_enemies()
 
+func spawn_enemies(rooms: Array[Room]) -> void:
+	clear_enemies()
+	spawn_enemies_in_rooms(rooms, true)
+
+
+func spawn_enemies_in_rooms(rooms: Array[Room], skip_start_room: bool = false) -> void:
 	if RunManager.current_floor != 1:
 		return
 
 	var total = randi_range(enemies_per_floor_min, enemies_per_floor_max)
 	var candidates: Array[Room] = []
-	for i in range(1, rooms.size()):
+	for i in range(rooms.size()):
+		if skip_start_room and rooms[i].global_position == Vector2.ZERO:
+			continue
 		candidates.append(rooms[i])
 	candidates.shuffle()
 
@@ -44,7 +50,8 @@ func spawn_enemies(rooms: Array[Room]) -> void:
 		room.enemies.append(enemy)
 		spawned += 1
 
-func _clear_enemies() -> void:
+
+func clear_enemies() -> void:
 	for child in get_children():
 		if child is Enemy:
 			child.queue_free()

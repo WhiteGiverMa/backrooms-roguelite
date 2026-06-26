@@ -6,10 +6,16 @@ extends Node
 @export var weapon_pickups: Array[PackedScene] = []
 @export var currency_pickup: PackedScene
 
+
 func spawn_items(rooms: Array[Room]) -> void:
+	clear_items()
+	spawn_items_in_rooms(rooms, true)
+
+
+func spawn_items_in_rooms(rooms: Array[Room], skip_start_room: bool = false) -> void:
 	for i in range(rooms.size()):
 		var room = rooms[i]
-		if i == 0:
+		if skip_start_room and room.global_position == Vector2.ZERO:
 			continue
 
 		var spawn_points = room.get_spawn_points()
@@ -47,3 +53,9 @@ func spawn_items(rooms: Array[Room]) -> void:
 			item.global_position = spawn_points[randi() % spawn_points.size()].global_position
 			add_child(item)
 			room.items.append(item)
+
+
+func clear_items() -> void:
+	for child in get_children():
+		if child is Node2D:
+			child.queue_free()
