@@ -522,24 +522,28 @@ func _build_tooltip() -> void:
 	tooltip_style.corner_radius_top_right = 4
 	tooltip_style.corner_radius_bottom_left = 4
 	tooltip_style.corner_radius_bottom_right = 4
+	# 内边距用 StyleBoxFlat 的 content_margin 来实现，不需要 MarginContainer
+	tooltip_style.content_margin_left = 8
+	tooltip_style.content_margin_right = 8
+	tooltip_style.content_margin_top = 6
+	tooltip_style.content_margin_bottom = 6
 	tooltip_panel.add_theme_stylebox_override("panel", tooltip_style)
 
-	var margin := MarginContainer.new()
-	margin.name = "Margin"
-	margin.add_theme_constant_override("margin_left", 6)
-	margin.add_theme_constant_override("margin_top", 4)
-	margin.add_theme_constant_override("margin_right", 6)
-	margin.add_theme_constant_override("margin_bottom", 4)
-	tooltip_panel.add_child(margin)
-
+	# 用 Label 而非 RichTextLabel — 避免异步布局问题
 	tooltip_label = RichTextLabel.new()
 	tooltip_label.name = "TooltipLabel"
-	tooltip_label.fit_content = true
-	tooltip_label.scroll_active = false
 	tooltip_label.bbcode_enabled = true
+	tooltip_label.scroll_active = false
 	tooltip_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tooltip_label.add_theme_font_size_override("normal_font_size", 12)
-	margin.add_child(tooltip_label)
+	tooltip_label.add_theme_color_override("default_color", Color(0.9, 0.9, 0.9))
+	# 固定宽高，让文字自动换行
+	tooltip_label.custom_minimum_size = Vector2(150, 50)
+	tooltip_label.size = Vector2(150, 50)
+	tooltip_panel.add_child(tooltip_label)
+
+	tooltip_panel.custom_minimum_size = Vector2(166, 62)  # 150 + 16 padding
+	tooltip_panel.size = Vector2(166, 62)
 
 	add_child(tooltip_panel)
 
@@ -562,19 +566,16 @@ func _on_slot_mouse_entered(slot: Button) -> void:
 	tooltip_label.text = tt
 	tooltip_panel.visible = true
 
-	# 固定尺寸避免布局塌陷（RichTextLabel.fit_content 需等下一帧才能拿到尺寸）
-	tooltip_panel.custom_minimum_size = Vector2(160, 40)
-	tooltip_panel.size = Vector2(160, 40)
-
+	var tw = 166
+	var th = 62
 	var mp := get_global_mouse_position()
 	var vp_size := get_viewport().get_visible_rect().size
 	var pos := mp + Vector2(16, 16)
-	if pos.x + 160 > vp_size.x:
-		pos.x = mp.x - 160 - 8
-	if pos.y + 40 > vp_size.y:
-		pos.y = mp.y - 40 - 8
-	tooltip_panel.global_position = pos
-	tooltip_panel.global_position = pos
+	if pos.x + tw > vp_size.x:
+		pos.x = mp.x - tw - 8
+	if pos.y + th > vp_size.y:
+		pos.y = mp.y - th - 8
+	tooltip_panel.position = pos
 
 
 func _on_slot_mouse_exited(_slot: Button) -> void:
