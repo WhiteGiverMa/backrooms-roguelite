@@ -404,7 +404,7 @@ func _refresh() -> void:
 
 	# --- Flashlight (slot 0) ---
 	if player.has_flashlight and main_idx < main_slots.size():
-		var fl_on := player.flashlight_on
+		var fl_on: bool = player.flashlight_on
 		_set_slot_item(main_slots[main_idx], "flashlight", {
 			"name": "手电筒",
 			"state": fl_on,
@@ -599,7 +599,7 @@ func _format_tooltip_text(kind: String, item: Variant) -> String:
 					lines.append("效果: %s (%.1fs)" % [w.status_effect, w.effect_duration])
 				var player = get_tree().get_first_node_in_group("player")
 				if player and w.ammo_type != "":
-					var reserve := player.get_ammo_reserve(w.ammo_type)
+					var reserve: int = player.get_ammo_reserve(w.ammo_type)
 					lines.append("储备: %d" % reserve)
 			else:
 				lines.append("类型: 近战武器")
@@ -797,7 +797,7 @@ func _set_detail_content(kind: String, item: Variant, _slot: Button) -> void:
 					info_lines.append("效果: %s" % w.status_effect)
 				var player = get_tree().get_first_node_in_group("player")
 				if player and w.ammo_type != "":
-					var reserve := player.get_ammo_reserve(w.ammo_type)
+					var reserve: int = player.get_ammo_reserve(w.ammo_type)
 					info_lines.append("\n弹药储备: %d" % reserve)
 			else:
 				info_lines.append("[b]近战武器[/b]")

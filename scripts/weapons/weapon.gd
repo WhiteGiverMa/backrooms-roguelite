@@ -286,33 +286,33 @@ func _draw_stun_gun_pixel(w: int, h: int) -> Image:
 func _spawn_melee_slash(origin: Vector2, direction: Vector2) -> void:
 	if not owner_player:
 		return
-	var s := 64
-	var img := Image.create(s, s, false, Image.FORMAT_RGBA8)
+	var s: int = 64
+	var img: Image = Image.create(s, s, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0, 0, 0, 0))
-	var cx := 0
-	var cy := s / 2
-	var half_angle_rad := deg_to_rad(melee_angle / 2.0)
+	var cx: int = 0
+	var cy: float = float(s) / 2.0
+	var half_angle_rad: float = deg_to_rad(melee_angle / 2.0)
 	for y in range(s):
 		for x in range(s):
-			var dx := x - cx
-			var dy := y - cy
-			var dist := sqrt(dx * dx + dy * dy)
+			var dx: float = x - cx
+			var dy: float = y - cy
+			var dist: float = sqrt(dx * dx + dy * dy)
 			if dist < 8 or dist > s:
 				continue
-			var angle := atan2(dy, dx)
+			var angle: float = atan2(dy, dx)
 			if abs(angle) > half_angle_rad:
 				continue
-			var alpha := (1.0 - dist / s) * (1.0 - abs(angle) / half_angle_rad)
+			var alpha: float = (1.0 - dist / float(s)) * (1.0 - abs(angle) / half_angle_rad)
 			alpha = alpha * 0.7
 			img.set_pixel(x, y, Color(1.0, 1.0, 1.0, alpha))
-	var tex := ImageTexture.create_from_image(img)
-	var slash_sprite := Sprite2D.new()
+	var tex: ImageTexture = ImageTexture.create_from_image(img)
+	var slash_sprite: Sprite2D = Sprite2D.new()
 	slash_sprite.texture = tex
 	slash_sprite.centered = true
 	slash_sprite.global_position = origin
 	slash_sprite.rotation = direction.angle()
 	slash_sprite.z_index = 20
 	owner_player.get_parent().add_child(slash_sprite)
-	var tween := slash_sprite.create_tween()
+	var tween: Tween = slash_sprite.create_tween()
 	tween.tween_property(slash_sprite, "modulate:a", 0.0, 0.18).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(slash_sprite.queue_free)
