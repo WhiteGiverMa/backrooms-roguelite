@@ -164,20 +164,38 @@ func _cleanup_distant(center: Vector2i) -> void:
 
 func _disable_door(room: Room, dir: int) -> void:
 	match dir:
-		0: room.has_door_top = false; room.door_top.visible = false
-		1: room.has_door_bottom = false; room.door_bottom.visible = false
-		2: room.has_door_left = false; room.door_left.visible = false
-		3: room.has_door_right = false; room.door_right.visible = false
+		0:
+			room.has_door_top = false
+			room.door_top.visible = false
+		1:
+			room.has_door_bottom = false
+			room.door_bottom.visible = false
+		2:
+			room.has_door_left = false
+			room.door_left.visible = false
+		3:
+			room.has_door_right = false
+			room.door_right.visible = false
 	room._build_wall_collisions()
 
 func _vector2i_to_door_dir(v: Vector2i) -> int:
-	if v == Vector2i.UP: return 0; if v == Vector2i.DOWN: return 1
-	if v == Vector2i.LEFT: return 2; return 3
+	if v == Vector2i.UP:
+		return 0
+	if v == Vector2i.DOWN:
+		return 1
+	if v == Vector2i.LEFT:
+		return 2
+	return 3
 
 func _get_dir_between(from: Vector2i, to: Vector2i) -> int:
 	var diff = to - from
-	if diff == Vector2i.UP: return 0; if diff == Vector2i.DOWN: return 1
-	if diff == Vector2i.LEFT: return 2; return 3
+	if diff == Vector2i.UP:
+		return 0
+	if diff == Vector2i.DOWN:
+		return 1
+	if diff == Vector2i.LEFT:
+		return 2
+	return 3
 
 func _place_player() -> void:
 	var player_node = get_tree().get_first_node_in_group("player")

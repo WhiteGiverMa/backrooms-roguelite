@@ -136,7 +136,11 @@ func _update_door_positions() -> void:
 	door_right.offset_right = room_half_w + WALL_THICKNESS
 
 func has_door(dir: int) -> bool:
-	match dir: 0: return has_door_top; 1: return has_door_bottom; 2: return has_door_left; 3: return has_door_right
+	match dir:
+		0: return has_door_top
+		1: return has_door_bottom
+		2: return has_door_left
+		3: return has_door_right
 	return false
 
 func _update_door_colors() -> void:
@@ -169,7 +173,11 @@ func toggle_door_lock(dir: int) -> bool:
 	return is_door_locked(dir)
 
 func is_door_locked(dir: int) -> bool:
-	match dir: 0: return door_locked_top; 1: return door_locked_bottom; 2: return door_locked_left; 3: return door_locked_right
+	match dir:
+		0: return door_locked_top
+		1: return door_locked_bottom
+		2: return door_locked_left
+		3: return door_locked_right
 	return false
 
 func _update_lock_collisions() -> void:
