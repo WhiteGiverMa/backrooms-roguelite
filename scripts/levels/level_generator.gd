@@ -74,9 +74,9 @@ func _generate_room_at(grid_pos: Vector2i) -> Room:
 	var wall_col = floor_col * 1.8
 
 	var room = room_template.instantiate() as Room
-	room.configure(size.x, size.y, floor_col, wall_col)
 	room.global_position = _grid_to_world(grid_pos) + Vector2(randf_range(-80, 80), randf_range(-60, 60))
 	add_child(room)
+	room.configure(size.x, size.y, floor_col, wall_col)
 	room_map[grid_pos] = room
 
 	if size.x >= 800 and size.y >= 600:
