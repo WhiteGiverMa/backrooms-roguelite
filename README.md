@@ -6,7 +6,11 @@
 
 - 主循环：主菜单 → 运行关卡 → 死亡结算 → 重试或返回菜单。
 - 关卡：`LevelGenerator` 在运行时生成房间网格，实例化 `room_template.tscn`，再放置玩家、敌人和拾取物。
-- 美术：多数精灵在 GDScript 中程序化生成；`assets/sprites/player.png` 是早期工具产物，不是当前玩家显示来源。
+- **武器系统**：手枪（远程）、匕首（近战+刀光）、定身枪（远程+晕眩效果）。攻击统一入口 `attack()`，弹药采用弹夹+储备双轨制，换弹时从储备拉取。
+- **背包系统**：类 Minecraft 9×3 网格 + 底行快捷栏，像素图标，悬停 tooltip，点击详情窗。按 B 打开。
+- **弹药系统**：手枪子弹 / 定身枪子弹独立储备，拾取补充，HUD 显示弹夹/储备，黄色换弹进度条。
+- **控制台**：按 ` 呼出，`/give_weapon`、`/give_ammo`、`/inv`、`/weapons` 等命令用于敏捷 QA。
+- 美术：多数精灵在 GDScript 中程序化生成（`Image.create` 模式）；武器贴图在 `weapon.gd:_generate_sprite()` 中生成。
 - 自动化：暂未配置测试、导出预设或 CI。
 
 ## 运行
@@ -29,6 +33,9 @@ godot --path .
 | 交互 | E |
 | 冲刺 | Space |
 | 暂停 | Escape |
+| 背包 | B |
+| 切换武器 | 1 / 2 / 3 / 4 |
+| 控制台 | ` |
 
 ## 项目结构
 
@@ -36,22 +43,24 @@ godot --path .
 .
 ├── project.godot                 # Godot 项目配置、autoload、输入映射
 ├── scenes/
-│   ├── ui/                       # 主菜单、升级、游戏结束界面
-│   └── levels/                   # 游戏关卡根场景和房间模板
+│   ├── ui/                       # 主菜单、升级、游戏结束、设置界面
+│   ├── levels/                   # 游戏关卡根场景、房间模板、宝箱、传送门
+│   ├── weapons/                  # 手枪、匕首、定身枪、子弹场景
+│   └── pickups/                  # 拾取物场景（8 种：弹药/武器/医疗/理智/货币）
 ├── scripts/
-│   ├── systems/                  # GameManager、RunManager、MetaProgression、AudioManager、Pickup
-│   ├── levels/                   # 房间、关卡生成、敌人与物品生成器
-│   ├── player/                   # 玩家移动、武器、受伤和死亡
-│   ├── enemies/                  # 敌人 AI 与伤害
-│   ├── weapons/                  # 武器和子弹
-│   └── ui/                       # 菜单、HUD、升级、结算界面逻辑
+│   ├── systems/                  # GameManager、RunManager、MetaProgression、AudioManager、Pickup、Settings、McpInteractionServer
+│   ├── levels/                   # 房间、关卡生成、敌人/物品生成器、战争迷雾
+│   ├── player/                   # 玩家（500+ 行：移动、冲刺、武器管理、弹药储备）
+│   ├── enemies/                  # 敌人 AI 与伤害（含晕眩状态）
+│   ├── weapons/                  # 武器系统（RANGED/MELEE 枚举、攻击、装填、刀光）
+│   └── ui/                       # 菜单、HUD、背包、热键栏、控制台（见 scripts/ui/AGENTS.md）
 ├── assets/sprites/               # 当前只有 player.png 及导入元数据
 └── generate_player.py            # 旧的 Python/Pillow 精灵生成工具，非运行时依赖
 ```
 
 ## 运行时入口
 
-`project.godot` 注册了 4 个 autoload：
+`project.godot` 注册了 7 个 autoload：
 
 | 单例 | 文件 | 职责 |
 | --- | --- | --- |
@@ -59,6 +68,9 @@ godot --path .
 | `RunManager` | `scripts/systems/run_manager.gd` | 当前楼层、理智、击杀、清理房间、运行时间 |
 | `MetaProgression` | `scripts/systems/meta_progression.gd` | 局外货币、升级、`user://meta_progression.save` 存档 |
 | `AudioManager` | `scripts/systems/audio_manager.gd` | 音乐、音效池、音量控制 |
+| `Settings` | `scripts/systems/settings.gd` | 持久化设置（`user://settings.json`），音量/开发者模式 |
+| `McpInteractionServer` | `scripts/systems/mcp_interaction_server.gd` | Godot MCP TCP 远程交互（~4200 行，项目最大文件） |
+| `Console` | `scripts/ui/console.gd` | 开发者控制台（按 ` 呼出，13 条命令） |
 
 场景流：
 
