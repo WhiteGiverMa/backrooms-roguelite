@@ -380,9 +380,12 @@ func _resize_icon_to_cache(src: Image) -> ImageTexture:
 	var oy := (ICON_SIZE - sh) / 2
 	for y in range(sh):
 		for x in range(sw):
-			var c := src.get_pixel(x, y)
-			if c.a > 0:
-				dst.set_pixel(ox + x, oy + y, c)
+			var px := ox + x
+			var py := oy + y
+			if px >= 0 and px < ICON_SIZE and py >= 0 and py < ICON_SIZE:
+				var c := src.get_pixel(x, y)
+				if c.a > 0:
+					dst.set_pixel(px, py, c)
 	return ImageTexture.create_from_image(dst)
 
 
