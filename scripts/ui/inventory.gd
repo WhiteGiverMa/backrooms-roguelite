@@ -575,7 +575,7 @@ func _on_slot_mouse_entered(slot: Button) -> void:
 		pos.x = mp.x - tw - 8
 	if pos.y + th > vp_size.y:
 		pos.y = mp.y - th - 8
-	tooltip_panel.position = pos
+	tooltip_panel.global_position = pos
 
 
 func _on_slot_mouse_exited(_slot: Button) -> void:
