@@ -28,7 +28,7 @@ func _process(_delta: float) -> void:
 	var hb = player.hotbar
 	for i in slot_buttons.size():
 		var txt = ""
-		if hb[i] == "flashlight":
+		if hb[i] is String and hb[i] == "flashlight":
 			txt = "手电"
 		elif hb[i] is Weapon:
 			txt = hb[i].weapon_name
@@ -41,7 +41,7 @@ func _on_slot_pressed(idx: int) -> void:
 		return
 	if idx == player.hotbar_selected:
 		var item = player.hotbar[idx]
-		if item == "flashlight":
+		if item is String and item == "flashlight":
 			player._toggle_flashlight()
 		elif item is Weapon and item == player.current_weapon:
 			pass

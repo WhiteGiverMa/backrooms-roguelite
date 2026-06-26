@@ -73,8 +73,8 @@ func _give_starting_weapon() -> void:
 	if pistol_scene:
 		var pistol = pistol_scene.instantiate()
 		add_weapon(pistol)
+		hotbar[1] = pistol  # 存武器实例而非字符串，否则切换后无法重新装备
 	hotbar[0] = "flashlight"
-	hotbar[1] = "pistol"
 	_generate_flashlight_beam()
 
 func _generate_flashlight_beam() -> void:
@@ -267,10 +267,13 @@ func _handle_weapon_aim() -> void:
 	weapon_pivot.look_at(mouse_pos)
 
 func _handle_actions() -> void:
-	if Input.is_action_pressed("shoot") and current_weapon:
-		current_weapon.try_shoot(muzzle_point.global_position, (get_global_mouse_position() - muzzle_point.global_position).normalized())
+	if current_weapon:
+		var should_attack := Input.is_action_pressed("shoot") if current_weapon.automatic else Input.is_action_just_pressed("shoot")
+		if should_attack:
+			var dir := (get_global_mouse_position() - muzzle_point.global_position).normalized()
+			current_weapon.attack(muzzle_point.global_position, dir)
 
-	if Input.is_action_just_pressed("reload") and current_weapon:
+	if Input.is_action_just_pressed("reload") and current_weapon and current_weapon.weapon_kind == Weapon.WeaponKind.RANGED:
 		current_weapon.start_reload()
 
 	if Input.is_key_pressed(KEY_1): _select_hotbar(0)
@@ -309,19 +312,19 @@ func _update_flashlight() -> void:
 func _select_hotbar(idx: int) -> void:
 	hotbar_selected = idx
 	var item = hotbar[idx]
-	if item == "flashlight":
+	if item is String and item == "flashlight":
 		pass
 	elif item is Weapon and item != current_weapon:
 		equip_weapon(item)
 
 func move_to_hotbar(backpack_idx: int) -> void:
-	var wp_idx = backpack_idx - 1 if hotbar[0] == "flashlight" else backpack_idx
+	var wp_idx = backpack_idx - 1 if (hotbar[0] is String and hotbar[0] == "flashlight") else backpack_idx
 	if wp_idx >= 0 and wp_idx < weapon_inventory.size():
 		hotbar[hotbar_selected] = weapon_inventory[wp_idx]
 
 func has_flashlight_in_hotbar() -> bool:
 	for item in hotbar:
-		if item == "flashlight":
+		if item is String and item == "flashlight":
 			return true
 	return false
 
@@ -336,6 +339,30 @@ func add_weapon(weapon: Weapon) -> void:
 	weapon_inventory.append(weapon)
 	if weapon_inventory.size() == 1:
 		equip_weapon(weapon)
+
+
+func remove_weapon(weapon: Weapon) -> void:
+	var idx := weapon_inventory.find(weapon)
+	if idx == -1:
+		return
+	var was_equipped := weapon == current_weapon
+	weapon_inventory.remove_at(idx)
+	# 清理 hotbar 中的悬空引用
+	for i in hotbar.size():
+		if hotbar[i] == weapon:
+			hotbar[i] = null
+	if was_equipped:
+		current_weapon = null
+		# 尝试装备下一个武器
+		for w in weapon_inventory:
+			equip_weapon(w)
+			break
+	weapon.queue_free()
+
+
+func drop_weapon() -> void:
+	if current_weapon:
+		remove_weapon(current_weapon)
 
 func take_damage(amount: float) -> void:
 	if is_dead or is_dashing or is_invincible:
