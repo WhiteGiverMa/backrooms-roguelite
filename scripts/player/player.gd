@@ -25,6 +25,7 @@ var has_flashlight: bool = true
 var flashlight_on: bool = false
 var hotbar: Array = [null, null, null, null]
 var hotbar_selected: int = 0
+var flashlight_body: Sprite2D
 
 var is_dashing: bool = false
 var dash_timer: float = 0.0
@@ -79,6 +80,7 @@ func _give_starting_weapon() -> void:
 		hotbar[1] = pistol
 	hotbar[0] = "flashlight"
 	_generate_flashlight_beam()
+	_generate_flashlight_body()
 
 func _generate_flashlight_beam() -> void:
 	var w = 320
@@ -96,6 +98,41 @@ func _generate_flashlight_beam() -> void:
 	flashlight_beam.centered = false
 	flashlight_beam.offset = Vector2(0, -h / 2.0)
 	flashlight_beam.visible = false
+
+func _generate_flashlight_body() -> void:
+	flashlight_body = Sprite2D.new()
+	weapon_pivot.add_child(flashlight_body)
+
+	var w = 20
+	var h = 8
+	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
+	# body: dark gray cylinder
+	for y in range(h):
+		for x in range(w - 4):
+			img.set_pixel(x, y, Color(0.25, 0.25, 0.30))
+	# lens: lighter gray at right end
+	for y in range(h):
+		for x in range(w - 4, w - 1):
+			img.set_pixel(x, y, Color(0.6, 0.6, 0.65))
+	# glow: warm yellow at rightmost 1px
+	for y in range(h):
+		img.set_pixel(w - 1, y, Color(1.0, 0.95, 0.7, 0.8))
+
+	var scale_factor = 2
+	var big = Image.create(w * scale_factor, h * scale_factor, false, Image.FORMAT_RGBA8)
+	for fy in range(h):
+		for fx in range(w):
+			var c = img.get_pixel(fx, fy)
+			if c.a > 0:
+				for dy in range(scale_factor):
+					for dx in range(scale_factor):
+						big.set_pixel(fx * scale_factor + dx, fy * scale_factor + dy, c)
+
+	var tex = ImageTexture.create_from_image(big)
+	flashlight_body.texture = tex
+	flashlight_body.centered = true
+	flashlight_body.position = Vector2(20, 0)
+	flashlight_body.visible = false
 
 func _generate_sprite_texture() -> void:
 	var s = SPRITE_SIZE
@@ -319,6 +356,8 @@ func _select_hotbar(idx: int) -> void:
 		pass
 	elif item is Weapon and item != current_weapon:
 		equip_weapon(item)
+	if flashlight_body:
+		flashlight_body.visible = (hotbar_selected == 0)
 
 func move_to_hotbar(backpack_idx: int) -> void:
 	var wp_idx = backpack_idx - 1 if (hotbar[0] is String and hotbar[0] == "flashlight") else backpack_idx
