@@ -8,6 +8,9 @@ extends CanvasLayer
 @onready var weapon_label: Label = $VBoxContainer/WeaponLabel
 @onready var minimap: Control = $Minimap
 
+var reload_bar: ProgressBar
+var _tracked_weapon: Weapon = null
+
 func _ready() -> void:
 	var player = get_tree().get_first_node_in_group("player")
 	if player:
@@ -18,6 +21,21 @@ func _ready() -> void:
 
 	RunManager.floor_changed.connect(_on_floor_changed)
 	RunManager.sanity_changed.connect(_on_sanity_changed)
+
+	# 创建换弹进度条（动态创建，不编辑 tscn）
+	reload_bar = ProgressBar.new()
+	reload_bar.name = "ReloadBar"
+	reload_bar.custom_minimum_size = Vector2(180, 8)
+	reload_bar.max_value = 1.0
+	reload_bar.value = 0.0
+	reload_bar.show_percentage = false
+	reload_bar.visible = false
+	reload_bar.add_theme_color_override("font_color", Color(0.9, 0.85, 0.3))
+	reload_bar.add_theme_stylebox_override("fill", _make_reload_style())
+	$VBoxContainer.add_child(reload_bar)
+	# 移到 AmmoLabel 之后
+	var ammo_idx = $VBoxContainer/AmmoLabel.get_index()
+	$VBoxContainer.move_child(reload_bar, ammo_idx + 1)
 
 func _on_health_changed(current: float, max_hp: float) -> void:
 	health_bar.max_value = max_hp
@@ -44,3 +62,41 @@ func _on_floor_changed(floor: int) -> void:
 func _on_weapon_changed(weapon: Weapon) -> void:
 	if weapon:
 		weapon_label.text = weapon.weapon_name
+		_bind_reload_bar(weapon)
+	else:
+		weapon_label.text = ""
+		_unbind_reload_bar()
+
+func _make_reload_style() -> StyleBoxFlat:
+	var s = StyleBoxFlat.new()
+	s.bg_color = Color(0.85, 0.7, 0.2)
+	s.corner_radius_top_left = 3
+	s.corner_radius_top_right = 3
+	s.corner_radius_bottom_left = 3
+	s.corner_radius_bottom_right = 3
+	return s
+
+func _bind_reload_bar(weapon: Weapon) -> void:
+	_unbind_reload_bar()
+	_tracked_weapon = weapon
+	if weapon.has_signal("reload_started") and weapon.has_signal("reload_progress"):
+		weapon.reload_started.connect(_on_reload_started)
+		weapon.reload_progress.connect(_on_reload_progress)
+
+func _unbind_reload_bar() -> void:
+	if _tracked_weapon and is_instance_valid(_tracked_weapon):
+		if _tracked_weapon.reload_started.is_connected(_on_reload_started):
+			_tracked_weapon.reload_started.disconnect(_on_reload_started)
+		if _tracked_weapon.reload_progress.is_connected(_on_reload_progress):
+			_tracked_weapon.reload_progress.disconnect(_on_reload_progress)
+	_tracked_weapon = null
+	reload_bar.visible = false
+
+func _on_reload_started(duration: float) -> void:
+	reload_bar.visible = true
+	reload_bar.value = 0.0
+
+func _on_reload_progress(progress: float) -> void:
+	reload_bar.value = progress
+	if progress >= 1.0:
+		reload_bar.visible = false
